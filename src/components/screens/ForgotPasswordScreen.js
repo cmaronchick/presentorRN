@@ -36,32 +36,67 @@ import {
     onChangeText(key, value) {
         this.setState({[key]: value})
     }
+
+    // Request a new password
+    async forgotPassword() {
+        const { username } = this.state
+        await Auth.forgotPassword(username)
+        .then(data => console.log('New code sent', data))
+        .catch(err => {
+        if (! err.message) {
+            console.log('Error while setting up the new password: ', err)
+            Alert.alert('Error while setting up the new password: ', err)
+        } else {
+            console.log('Error while setting up the new password: ', err.message)
+            Alert.alert('Error while setting up the new password: ', err.message)
+        }
+        })
+    }
+    
+    // Upon confirmation redirect the user to the Sign In page
+    async forgotPasswordSubmit() {
+        const { username, authCode, newPassword } = this.state
+        await Auth.forgotPasswordSubmit(username, authCode, newPassword)
+        .then(() => {
+        this.props.navigation.navigate('SignIn')
+        console.log('the New password submitted successfully')
+        })
+        .catch(err => {
+        if (! err.message) {
+            console.log('Error while confirming the new password: ', err)
+            Alert.alert('Error while confirming the new password: ', err)
+        } else {
+            console.log('Error while confirming the new password: ', err.message)
+            Alert.alert('Error while confirming the new password: ', err.message)
+        }
+        })
+    }
     componentDidMount() {
         this.fadeIn()
-      }
-      fadeIn() {
+    }
+    fadeIn() {
         Animated.timing(
         this.state.fadeIn,
         {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: true})
-      }
+    }
 
-      fadeOut() {
+    fadeOut() {
         Animated.timing(
         this.state.fadeOut,
         {
-          toValue: 0, // 1 in the SignInScreen component
-          duration: 700,
-          useNativeDriver: true
+            toValue: 0, // 1 in the SignInScreen component
+            duration: 700,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: false})
-      }
+    }
     render() {
         let { fadeOut, fadeIn, isHidden } = this.state
       return (
@@ -107,7 +142,7 @@ import {
                         />
                     </Item>
                     <TouchableOpacity
-                        style={styles.buttonStyle}>
+                        style={styles.buttonStyle} onPress={() => this.forgotPassword()}>
                         <Text style={styles.buttonText}>
                         Send Code
                         </Text>
@@ -156,7 +191,7 @@ import {
                         />
                     </Item>
                     <TouchableOpacity
-                        style={styles.buttonStyle}>
+                        style={styles.buttonStyle} onPress={() => this.forgotPasswordSubmit()}>
                         <Text style={styles.buttonText}>
                         Confirm the new password
                         </Text>

@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     StyleSheet,
+    ScrollView,
     View,
     Text,
     SafeAreaView,
@@ -36,6 +37,8 @@ import {
     state = {
         username: '',
         password: '',
+        firstname: '',
+        lastname: '',
         email: '',
         phoneNumber: '',
         authCode: '',
@@ -51,16 +54,19 @@ import {
 
     // Sign up user with AWS Amplify Auth
     async signUp() {
-        const { username, password, email, phoneNumber } = this.state
+        const { username, password, firstname, lastname, email, phoneNumber } = this.state
         // rename variable to conform with Amplify Auth field phone attribute
         const phone_number = phoneNumber
         await Auth.signUp({
             username,
             password,
+            firstname,
+            lastname,
             attributes: { email, phone_number }
             })
-            .then(() => {
-            console.log('sign up successful!')
+            .then((response) => {
+            console.log('sign up successful!', response)
+            this.setState({user: response.user})
             Alert.alert('Enter the confirmation code you received.')
             })
             .catch(err => {
@@ -174,7 +180,7 @@ import {
             behavior='padding' 
             enabled>
             <TouchableWithoutFeedback style={styles.container} onPress={Keyboard.dismiss}>
-                <View style={styles.container}>
+                <ScrollView contentContainerStyle={styles.container}>
                 {/* App Logo */}
                 <View style={styles.logoContainer}>
                     {
@@ -259,6 +265,49 @@ import {
                         onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
+                    {/* name section */}
+                    <Item rounded style={styles.itemStyle}>
+                        <Icon
+                        active
+                        name='person'
+                        style={styles.iconStyle}
+                        />
+                        <Input
+                        style={styles.input}
+                        placeholder='First Name'
+                        placeholderTextColor='#adb4bc'
+                        returnKeyType='next'
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        secureTextEntry={false}
+                        ref='FourthInput'
+                        onSubmitEditing={(event) => {this.refs.FifthInput._root.focus()}}
+                        onChangeText={value => this.onChangeText('firstname', value)}
+                        onFocus={() => this.fadeOut()}
+                        onEndEditing={() => this.fadeIn()}
+                        />
+                    </Item>
+                    <Item rounded style={styles.itemStyle}>
+                        <Icon
+                        active
+                        name='person'
+                        style={styles.iconStyle}
+                        />
+                        <Input
+                        style={styles.input}
+                        placeholder='Last Name'
+                        placeholderTextColor='#adb4bc'
+                        returnKeyType='next'
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        secureTextEntry={false}
+                        ref='FifthInput'
+                        onSubmitEditing={(event) => {this.refs.SixthInput._root.focus()}}
+                        onChangeText={value => this.onChangeText('lastname', value)}
+                        onFocus={() => this.fadeOut()}
+                        onEndEditing={() => this.fadeIn()}
+                        />
+                    </Item>
                     {/* phone section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -284,7 +333,7 @@ import {
                         autoCapitalize='none'
                         autoCorrect={false}
                         secureTextEntry={false}
-                        ref='FourthInput'
+                        ref='SixthInput'
                         value={this.state.phoneNumber}
                         onChangeText={(val) => this.onChangeText('phoneNumber', val)}
                         onFocus={() => this.fadeOut()}
@@ -364,7 +413,7 @@ import {
                     </TouchableOpacity>
                     </View>
                 </Container>
-                </View>
+                </ScrollView>
             </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
         </SafeAreaView>
