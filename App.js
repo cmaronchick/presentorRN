@@ -21,6 +21,7 @@ import WelcomeScreen from './src/components/screens/WelcomeScreen'
 import SignInScreen from './src/components/screens/SignInScreen'
 import SignUpScreen from './src/components/screens/SignUpScreen'
 import ForgotPasswordScreen from './src/components/screens/ForgotPasswordScreen'
+import ConfirmUserScreen from './src/components/screens/ConfirmUserScreen'
 
 //App Stack Screen Imports
 import HomeScreen from './src/components/screens/HomeScreen';
@@ -42,6 +43,12 @@ const AuthStackNavigator = createStackNavigator({
       title: 'Create New Account',
     }),
   },
+  ConfirmUser: {
+    screen: ConfirmUserScreen,
+    navigationOptions: () => ({
+      title: 'Enter Confirmation Code',
+    }),
+  },
   SignIn: {
     screen: SignInScreen,
     navigationOptions: () => ({
@@ -54,6 +61,7 @@ const AuthStackNavigator = createStackNavigator({
       title: `Create a new password`,
     }),
   },
+
 });
 
 // Bottom Tabs

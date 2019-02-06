@@ -70,7 +70,10 @@ const logo = require('../images/logo.jpg')
             console.log('Error when signing in: ', err)
             Alert.alert('Error when signing in: ', err)
             } else {
-            console.log('Error when signing in: ', err.message)
+                if (err.code === "UserNotConfirmedException") {
+                    this.props.navigation.navigate('ConfirmUser');
+                }
+            console.log('Error when signing in: ', err, '; ', err.message)
             Alert.alert('Error when signing in: ', err.message)
             }
         })

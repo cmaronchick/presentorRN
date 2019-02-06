@@ -6,9 +6,22 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native'
+import Auth from '@aws-amplify/auth'
 const logo = require('../images/logo.jpg')
 
 export default class WelcomeScreen extends React.Component {
+  checkUserStatus = async () => {
+    await Auth.currentAuthenticatedUser()
+    .then((user) => {
+      console.log('user: ', user)
+    })
+    .catch((error) => {
+      console.log('user error: ', error)
+    })
+  }  
+  componentDidMount() {
+    this.checkUserStatus()
+  }
   handleRoute = async (destination) => {
     await this.props.navigation.navigate(destination)
   }

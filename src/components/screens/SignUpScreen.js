@@ -20,6 +20,7 @@ import {
   } from 'react-native'
   import {
       Container,
+      Content,
       Item,
       Input,
       Icon,
@@ -65,53 +66,17 @@ import {
             attributes: { email, phone_number }
             })
             .then((response) => {
-            console.log('sign up successful!', response)
             this.setState({user: response.user})
-            Alert.alert('Enter the confirmation code you received.')
+            this.props.navigation.navigate('ConfirmUser')
             })
             .catch(err => {
             if (! err.message) {
                 console.log('Error when signing up: ', err)
                 Alert.alert('Error when signing up: ', err)
             } else {
-                console.log('Error when signing up: ', err.message)
+                console.log('Error when signing up: ', err, '; ', err.message)
                 Alert.alert('Error when signing up: ', err.message)
             }
-        })
-    }
-    
-    // Confirm users and redirect them to the SignIn page
-    async confirmSignUp() {
-        const { username, authCode } = this.state
-        await Auth.confirmSignUp(username, authCode)
-        .then(() => {
-            this.props.navigation.navigate('SignIn')
-            console.log('Confirm sign up successful')
-            })
-            .catch(err => {
-            if (! err.message) {
-                console.log('Error when entering confirmation code: ', err)
-                Alert.alert('Error when entering confirmation code: ', err)
-            } else {
-                console.log('Error when entering confirmation code: ', err.message)
-                Alert.alert('Error when entering confirmation code: ', err.message)
-            }
-        })
-    }
-    
-    // Resend code if not received already
-    async resendSignUp() {
-        const { username } = this.state
-        await Auth.resendSignUp(username)
-        .then(() => console.log('Confirmation code resent successfully'))
-        .catch(err => {
-        if (! err.message) {
-            console.log('Error requesting new confirmation code: ', err)
-            Alert.alert('Error requesting new confirmation code: ', err)
-        } else {
-            console.log('Error requesting new confirmation code: ', err.message)
-            Alert.alert('Error requesting new confirmation code: ', err.message)
-        }
         })
     }
     componentDidMount() {
@@ -180,7 +145,7 @@ import {
             behavior='padding' 
             enabled>
             <TouchableWithoutFeedback style={styles.container} onPress={Keyboard.dismiss}>
-                <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.container}>
                 {/* App Logo */}
                 <View style={styles.logoContainer}>
                     {
@@ -197,7 +162,7 @@ import {
                     }
                 </View>
                 <Container style={styles.infoContainer}>
-                    <View style={styles.container}>
+                    <ScrollView contentContainerStyle={[styles.container, {paddingTop: 270}]}>
                     {/* username section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -287,7 +252,7 @@ import {
                         onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
-                    <Item rounded style={styles.itemStyle}>
+                    {/* <Item rounded style={styles.itemStyle}>
                         <Icon
                         active
                         name='person'
@@ -307,7 +272,7 @@ import {
                         onFocus={() => this.fadeOut()}
                         onEndEditing={() => this.fadeIn()}
                         />
-                    </Item>
+                    </Item> */}
                     {/* phone section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -342,7 +307,8 @@ import {
                         <Modal
                             animationStyle="slide"
                             transparent={false}
-                            visible={this.state.modalVisible}>
+                            visible={this.state.modalVisible}
+                            onRequestClose={() => { console.log('Modal closed')}}>
                             <View style={{flex: 1}}>
                                 <View style={{flex: 7, marginTop: 80 }}>
                                     <FlatList
@@ -411,9 +377,9 @@ import {
                         Resend code
                         </Text>
                     </TouchableOpacity>
-                    </View>
+                    </ScrollView>
                 </Container>
-                </ScrollView>
+                </View>
             </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
         </SafeAreaView>
