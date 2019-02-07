@@ -143,6 +143,24 @@ import {
                 </View>
                 <Container style={styles.infoContainer}>
                     <View style={styles.container}>
+                        <Item rounded style={styles.itemStyle}>
+                            <Icon
+                            active
+                            name='person'
+                            style={styles.iconStyle}
+                            />
+                            <Input
+                            style={styles.input}
+                            placeholder='Username'
+                            placeholderTextColor='#adb4bc'
+                            keyboardType={'email-address'}
+                            returnKeyType='next'
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            onSubmitEditing={(event) => {this.refs.SecondInput._root.focus()}}
+                            onChangeText={value => this.onChangeText('username', value)}
+                            />
+                        </Item>
                     {/* code confirmation section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
