@@ -13,11 +13,6 @@ const styles = StyleSheet.create({
       color: '#5a52a5',
     },
     infoContainer: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      height: 370,
-      bottom: 25,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',

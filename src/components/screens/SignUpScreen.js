@@ -38,8 +38,8 @@ import {
     state = {
         username: '',
         password: '',
-        firstname: '',
-        lastname: '',
+        givenName: '',
+        familyName: '',
         email: '',
         phoneNumber: '',
         authCode: '',
@@ -55,15 +55,19 @@ import {
 
     // Sign up user with AWS Amplify Auth
     async signUp() {
-        const { username, password, firstname, lastname, email, phoneNumber } = this.state
+        const { username, password, givenName, familyName, email, phoneNumber } = this.state
         // rename variable to conform with Amplify Auth field phone attribute
         const phone_number = phoneNumber
+        const given_name = givenName;
+        const family_name = familyName
         await Auth.signUp({
             username,
             password,
-            firstname,
-            lastname,
-            attributes: { email, phone_number }
+            attributes: { 
+                given_name,
+                family_name,
+                email,
+                phone_number }
             })
             .then((response) => {
             this.setState({user: response.user})
@@ -162,7 +166,7 @@ import {
                     }
                 </View>
                 <Container style={styles.infoContainer}>
-                    <ScrollView contentContainerStyle={[styles.container, {paddingTop: 270}]}>
+                    <ScrollView contentContainerStyle={styles.container}>
                     {/* username section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -247,12 +251,12 @@ import {
                         secureTextEntry={false}
                         ref='FourthInput'
                         onSubmitEditing={(event) => {this.refs.FifthInput._root.focus()}}
-                        onChangeText={value => this.onChangeText('firstname', value)}
+                        onChangeText={value => this.onChangeText('givenName', value)}
                         onFocus={() => this.fadeOut()}
                         onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
-                    {/* <Item rounded style={styles.itemStyle}>
+                    <Item rounded style={styles.itemStyle}>
                         <Icon
                         active
                         name='person'
@@ -268,11 +272,11 @@ import {
                         secureTextEntry={false}
                         ref='FifthInput'
                         onSubmitEditing={(event) => {this.refs.SixthInput._root.focus()}}
-                        onChangeText={value => this.onChangeText('lastname', value)}
+                        onChangeText={value => this.onChangeText('familyName', value)}
                         onFocus={() => this.fadeOut()}
                         onEndEditing={() => this.fadeIn()}
                         />
-                    </Item> */}
+                    </Item>
                     {/* phone section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -345,7 +349,7 @@ import {
                         </Text>
                     </TouchableOpacity>
                     {/* code confirmation section  */}
-                    <Item rounded style={styles.itemStyle}>
+                    {/* <Item rounded style={styles.itemStyle}>
                         <Icon
                         active
                         name='md-apps'
@@ -376,7 +380,7 @@ import {
                         <Text style={styles.buttonText}>
                         Resend code
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     </ScrollView>
                 </Container>
                 </View>
