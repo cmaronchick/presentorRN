@@ -58,6 +58,7 @@ const logo = require('../images/logo.jpg')
           this.setState({[key]: value})
       }
       async signIn () {
+        console.log('sign in started')
         const { username, password } = this.state
         await Auth.signIn(username, password)
         .then(user => {

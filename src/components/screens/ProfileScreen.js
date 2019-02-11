@@ -1,8 +1,19 @@
 import React from 'react'
 import {
-  StyleSheet,
-  View,
-  Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    StyleSheet,
+    ScrollView,
+    View,
+    Text,
+    SafeAreaView,
+    StatusBar,
+    KeyboardAvoidingView,
+    Keyboard,
+    Alert,
+    Modal,
+    FlatList,
+    Animated,
 } from 'react-native'
 import {
   Container,
@@ -11,21 +22,91 @@ import {
   Item,
 } from 'native-base'
 import Auth from '@aws-amplify/auth'
+import CognitoUser from 'amazon-cognito-identity-js'
 import styles from '../styles/signIn'
+
+import countryCodeData from '../countryCode'
+// Default render of country flag
+const defaultFlag = countryCodeData.filter(
+  obj => obj.name === 'United Kingdom'
+)[0].flag
 
 export default class ProfileScreen extends React.Component {
   state = {
-    user,
-    attributes
+    user: null,
+    username: '',
+    password: '', 
+    givenName: '',
+    familyName: '',
+    email: '',
+    phoneNumber: '',
+    updatingProfile: false,
+    flag: defaultFlag,
+    modalVisible: false,
+    fadeIn: new Animated.Value(0),  // Initial value for opacity: 0
+    fadeOut: new Animated.Value(1),  // Initial value for opacity: 1
+    isHidden: false
   }
-  async getCurrentUser () {
-    await Auth.currentAuthenticatedUser()
-    .then(async (user) => {
-      this.setState({user})
-    })
-    .catch(this.props.navigation.navigate('SignIn'))
+  onChangeText(key, value) {
+      this.setState({[key]: value})
   }
+  
+    async getCountry(country) {
+        // Get the country flag and phone code from users selection
+        const countryData = await countryCodeData
+        try {
+        const countryCode = await countryData.filter(
+            obj => obj.name === country
+        )[0].dial_code
+        const countryFlag = await countryData.filter(
+            obj => obj.name === country
+        )[0].flag
+        // Set data from user choice of country
+        this.setState({ phoneNumber: countryCode, flag: countryFlag })
+        await this.hideModal()
+        }
+        catch (err) {
+        console.log(err)
+        }
+    }
+    getCurrentUser = async () => {
+        await Auth.currentAuthenticatedUser()
+        .then((user) => {
+            console.log('user :', user);
+            this.setState({user, username: user.username, givenName: user.attributes.given_name, familyName: user.attributes.family_name, phoneNumber: user.attributes.phone_number, email: user.attributes.email})
+            //console.log('this.state:', this.state)
+        })
+    }
+    componentDidMount = async () => {
+        await this.getCurrentUser()
+    }
+
+    updateUserProfile = async () => {
+        this.setState({updatingProfile: !this.state.updatingProfile});
+        const { username, password, givenName, familyName, email, phoneNumber } = this.state
+        const given_name = givenName
+        const family_name = familyName
+        const phone_number = phoneNumber
+        await Auth.currentAuthenticatedUser()
+        .then(async (user) => {
+            await Auth.updateUserAttributes(user, { email, given_name, family_name, phone_number })
+            .then(async (updateResult) => {
+                console.log('updateResult :', updateResult);
+                this.setState({updatingProfile: !this.state.updatingProfile});
+                await Auth.currentUserInfo()
+                .then(user => this.setState({user}))
+                .catch(error => console.log('error :', error))
+            })
+            .catch(authError => console.log('authError :', authError))
+        })
+        .catch(updateError => console.log('updateError ', updateError));
+    }
+
   render() {
+    let { fadeOut, fadeIn, isHidden, flag, user, phoneNumber, givenName, familyName, email } = this.state
+    const phone_number = phoneNumber
+        const given_name = givenName;
+        const family_name = familyName
     return (
       <SafeAreaView style={styles.container}>
             <StatusBar/>
@@ -46,16 +127,14 @@ export default class ProfileScreen extends React.Component {
                         />
                         <Input
                         style={styles.input}
-                        placeholder='Username'
+                        value={user ? user.username : ''}
+                        disabled={true}
                         placeholderTextColor='#adb4bc'
                         keyboardType={'email-address'}
                         returnKeyType='next'
                         autoCapitalize='none'
                         autoCorrect={false}
-                        onSubmitEditing={(event) => {this.refs.SecondInput._root.focus()}}
                         onChangeText={value => this.onChangeText('username', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
                     {/* email section */}
@@ -67,7 +146,7 @@ export default class ProfileScreen extends React.Component {
                         />
                         <Input
                         style={styles.input}
-                        placeholder={this.state.user.email ? this.state.user.email : 'you@domain.com'}
+                        value={email ? email : user ? user.attributes.email : ''}
                         placeholderTextColor='#adb4bc'
                         keyboardType={'email-address'}
                         returnKeyType='next'
@@ -75,10 +154,7 @@ export default class ProfileScreen extends React.Component {
                         autoCorrect={false}
                         secureTextEntry={false}
                         ref='ThirdInput'
-                        onSubmitEditing={(event) => {this.refs.FourthInput._root.focus()}}
                         onChangeText={value => this.onChangeText('email', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
                     {/* name section */}
@@ -90,17 +166,14 @@ export default class ProfileScreen extends React.Component {
                         />
                         <Input
                         style={styles.input}
-                        placeholder='First Name'
+                        value={givenName ? givenName : user ? user.attributes.given_name : ''}
                         placeholderTextColor='#adb4bc'
                         returnKeyType='next'
                         autoCapitalize='none'
                         autoCorrect={false}
                         secureTextEntry={false}
                         ref='FourthInput'
-                        onSubmitEditing={(event) => {this.refs.FifthInput._root.focus()}}
                         onChangeText={value => this.onChangeText('givenName', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
                     <Item rounded style={styles.itemStyle}>
@@ -111,17 +184,14 @@ export default class ProfileScreen extends React.Component {
                         />
                         <Input
                         style={styles.input}
-                        placeholder='Last Name'
+                        value={familyName ? familyName : user ? user.attributes.family_name : ''}
                         placeholderTextColor='#adb4bc'
                         returnKeyType='next'
                         autoCapitalize='none'
                         autoCorrect={false}
                         secureTextEntry={false}
                         ref='FifthInput'
-                        onSubmitEditing={(event) => {this.refs.SixthInput._root.focus()}}
                         onChangeText={value => this.onChangeText('familyName', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
                     {/* phone section  */}
@@ -142,7 +212,7 @@ export default class ProfileScreen extends React.Component {
                         />
                         <Input
                         style={styles.input}
-                        placeholder='+44766554433'
+                        value={phoneNumber ? phoneNumber : user ? user.attributes.phone_number : ''}
                         placeholderTextColor='#adb4bc'
                         keyboardType={'phone-pad'}
                         returnKeyType='done'
@@ -152,8 +222,6 @@ export default class ProfileScreen extends React.Component {
                         ref='SixthInput'
                         value={this.state.phoneNumber}
                         onChangeText={(val) => this.onChangeText('phoneNumber', val)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
                         />
                         <Modal
                             animationStyle="slide"
@@ -190,44 +258,11 @@ export default class ProfileScreen extends React.Component {
                     </Item>
                     {/* End of phone input */}
                     <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.signUp()}>
+                        style={styles.buttonStyle} onPress={() => this.updateUserProfile()} disabled={this.state.updatingProfile}>
                         <Text style={styles.buttonText}>
-                        Sign Up
+                        Save Changes
                         </Text>
                     </TouchableOpacity>
-                    {/* code confirmation section  */}
-                    {/* <Item rounded style={styles.itemStyle}>
-                        <Icon
-                        active
-                        name='md-apps'
-                        style={styles.iconStyle}
-                        />
-                        <Input
-                        style={styles.input}
-                        placeholder='Confirmation code'
-                        placeholderTextColor='#adb4bc'
-                        keyboardType={'numeric'}
-                        returnKeyType='done'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        secureTextEntry={false}
-                        onChangeText={value => this.onChangeText('authCode', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
-                        />
-                    </Item>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.confirmSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Confirm Sign Up
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.resendSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Resend code
-                        </Text>
-                    </TouchableOpacity> */}
                     </ScrollView>
                 </Container>
                 </View>
