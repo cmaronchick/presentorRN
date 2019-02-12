@@ -53,16 +53,13 @@ export default class HomeScreen extends React.Component {
   }
 
   selectPresentee = (presentee) => {
-    this.setState({presentee: presentee})
-    //console.log('presentee :', presentee);
+    this.props.navigation.navigate('Presentee', { presentee: presentee})
   }
+
 
 
   render() {
     let { presentorInfo } = this.state;
-    if (this.state.presentee) {
-      return <PresenteeScreen presentee={this.state.presentee} />
-    }
     return (
       <View style={styles.container}>
       {/* refresh button  */}

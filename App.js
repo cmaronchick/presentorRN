@@ -27,6 +27,7 @@ import ConfirmUserScreen from './src/components/screens/ConfirmUserScreen'
 import HomeScreen from './src/components/screens/HomeScreen';
 import ProfileScreen from './src/components/screens/ProfileScreen';
 import SettingsScreen from './src/components/screens/SettingsScreen';
+import PresenteeScreen from './src/components/screens/PresenteeScreen';
 
 // Auth Stack
 const AuthStackNavigator = createStackNavigator({
@@ -148,7 +149,8 @@ const AppStackNavigator = createStackNavigator({
         </TouchableOpacity>
       )
     })
-  }
+  },
+  Presentee: PresenteeScreen
 })
 
 // App Stack for the Drawer
