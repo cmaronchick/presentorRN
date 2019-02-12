@@ -26,10 +26,13 @@ import {
   import Auth from '@aws-amplify/auth'
   import apis from '../../apis/apis'
 
+  import PresenteeScreen from './PresenteeScreen'
+
 export default class HomeScreen extends React.Component {
   state = {
     user: null,
-    userToken: ''
+    userToken: '',
+    presentorInfo: {}
   }
 
   getPresentorInfo = async () => {
@@ -49,12 +52,20 @@ export default class HomeScreen extends React.Component {
     await this.getPresentorInfo();
   }
 
+  selectPresentee = (presentee) => {
+    this.setState({presentee: presentee})
+    //console.log('presentee :', presentee);
+  }
+
+
   render() {
+    let { presentorInfo } = this.state;
+    if (this.state.presentee) {
+      return <PresenteeScreen presentee={this.state.presentee} />
+    }
     return (
       <View style={styles.container}>
-        <Text>Screen name</Text>
-        
-        {/* refresh button  */}
+      {/* refresh button  */}
         <Item rounded style={styles.itemStyle}>
           <TouchableOpacity onPress={() => this.getPresentorInfo()}>
             <Icon
@@ -64,6 +75,25 @@ export default class HomeScreen extends React.Component {
             />
           </TouchableOpacity>
         </Item>
+        {presentorInfo && presentorInfo.Items && presentorInfo.Items[0].presentees ? 
+          <FlatList
+            data={
+              presentorInfo.Items[0].presentees.L
+            }
+            keyExtractor={(item) => item.M.id.S}
+            renderItem={({item}) => (
+              <TouchableOpacity onPress={() => this.selectPresentee(item)}>
+                <View key={item.M.id.S} style={styles.container}>
+                  <Text>{item.M.firstName.S} {item.M.lastName.S}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
+          />
+          : 
+          <Text>Add Giftees</Text>
+        }
+        
       </View>
     )
   }
