@@ -85,29 +85,29 @@ import {
     }
     componentDidMount() {
         this.fadeIn()
-      }
-      fadeIn() {
+    }
+    fadeIn() {
         Animated.timing(
         this.state.fadeIn,
         {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: true})
-      }
-      fadeOut() {
+    }
+    fadeOut() {
         Animated.timing(
         this.state.fadeOut,
         {
-          toValue: 0, // 1 in the SignInScreen component
-          duration: 700,
-          useNativeDriver: true
+            toValue: 0, // 1 in the SignInScreen component
+            duration: 700,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: false})
-      }
+    }
     // Functions for Phone Input
     showModal() {
         this.setState({ modalVisible: true })

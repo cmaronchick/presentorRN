@@ -3,7 +3,8 @@ import {
     View,
     Text,
     StyleSheet,
-    FlatList
+    FlatList,
+    Modal,
 } from "react-native";
 
 import {
@@ -13,6 +14,10 @@ import {
     Input,
     Icon,
 } from 'native-base'
+import Auth from '@aws-amplify/core'
+import apis from '../../apis/apis'
+
+import signInStyles from '../styles/signIn'
 //import Accordion from 'react-native-accordion'
 // import { FlatList } from "react-native-gesture-handler";
 
@@ -87,6 +92,27 @@ class PresenteeScreen extends Component {
     state = {
         presentee: this.props.navigation.getParam('presentee', null)
     }
+
+    onChangeText(key, value) {
+        this.setState({[key]: value})
+    }
+
+    updatePresentee = async () => {
+        await Auth.currentAuthenticatedUser()
+        .then(async (user) => {
+            await apis.updatePresentorInfo(user.signInUserSession.idToken.jwtToken,this.state)
+        })
+    }
+    showModal() {
+        this.setState({ modalVisible: true })
+        console.log('Shown')
+    }
+    hideModal() {
+        this.setState({ modalVisible: false })
+        // Refocus on phone Input after modal is closed
+        console.log('Hidden')
+    }
+
     render() {
         const { navigation } = this.props;
         const presentee = this.state.presentee
@@ -94,27 +120,61 @@ class PresenteeScreen extends Component {
         //let { presentee } = this.props
         return (
             <View style={styles.container, styles.presenteeContainer}>
-                <Text>{presentee.M.firstName.S} {presentee.M.lastName.S}</Text>
-                {presentee.M.keyDates ?
+                <Text>{presentee.firstName} {presentee.lastName}</Text>
+                {presentee.keyDates ?
                     <FlatList
-                        data={presentee.M.keyDates.L.sort((a,b) => {
-                            if (a.M.date.S > b.M.date.S) return 1;
+                        data={presentee.keyDates.sort((a,b) => {
+                            if (a.date > b.date) return 1;
                             return -1;
                         })}
-                        keyExtractor={(item) => item.M.date.S}
+                        keyExtractor={(item) => item.date}
                         renderItem={({item}) => (    
-                            <View style={styles.dateRow}><Text>{item.M.name.S}</Text><Text>{new Date(item.M.date.S).getMonth() + 1}/{new Date(item.M.date.S).getDate() + 1}/{new Date(item.M.date.S).getFullYear()}</Text></View>
+                            <View style={styles.dateRow}>
+                                <Text>{item.name}</Text>
+                                <Text>
+                                    {new Date(item.date).getMonth() + 1}
+                                    /{new Date(item.date).getDate() + 1}
+                                    /{new Date(item.date).getFullYear()}
+                                </Text>
+                            </View>
                         )
                     }
                     />
-                    // <AccordionList data={presentee.M.keyDates.L.sort((a,b) => {
-                    //             if (a.M.date.S > b.M.date.S) return 1;
-                    //             return -1;
-                    // })}
-                    // />
                 :
                     <Text>Add Key Dates</Text>
                 }
+                <Modal
+                    animationStyle="slide"
+                    transparent={false}
+                    visible={this.state.modalVisible}
+                    onRequestClose={() => { console.log('Modal closed')}}>
+                    <View style={{flex: 1}}>
+                        <View style={{flex: 7, marginTop: 80 }}>
+                            
+                            <Input
+                            style={signInStyles.input}
+                            value={presentee.firstName}
+                            returnKeyType='done'
+                            autoCapitalize={true}
+                            autoCorrect={false}
+                            secureTextEntry={false}
+                            ref='FirstInput'
+                            onChangeText={(val) => this.onChangeText(presentee['firstName'], val)}
+                            onFocus={() => this.fadeOut()}
+                            onEndEditing={() => this.fadeIn()}
+                            />
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => {
+                                this.updatePresentee()
+                            }}
+                            style={styles.closeButtonStyle}>
+                            <Text style={styles.textStyle}>
+                                Close
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
             </View>
         );
     }

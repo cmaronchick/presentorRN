@@ -72,16 +72,16 @@ export default class HomeScreen extends React.Component {
             />
           </TouchableOpacity>
         </Item>
-        {presentorInfo && presentorInfo.Items && presentorInfo.Items[0].presentees ? 
+        {presentorInfo && presentorInfo.presentees ? 
           <FlatList
             data={
-              presentorInfo.Items[0].presentees.L
+              presentorInfo.presentees
             }
-            keyExtractor={(item) => item.M.id.S}
+            keyExtractor={(item) => item._id}
             renderItem={({item}) => (
               <TouchableOpacity onPress={() => this.selectPresentee(item)}>
-                <View key={item.M.id.S} style={styles.container}>
-                  <Text>{item.M.firstName.S} {item.M.lastName.S}</Text>
+                <View key={item._id} style={styles.container}>
+                  <Text>{item.firstName} {item.lastName}</Text>
                 </View>
               </TouchableOpacity>
             )}
