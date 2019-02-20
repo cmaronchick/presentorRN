@@ -32,13 +32,33 @@ export default {
                     Authorization: token,
                     'Content-type': 'application/json'
                 },
+                body: JSON.stringify(presentorInfo)
+            }
+            let response = await fetch(
+            apiHost + 'presentee', apiCallOptions
+            );
+            let presentorJson = await response.json();
+            return presentorJson;
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    async updatePresenteeInfo(token, presenteeInfo) {
+        try {
+            let apiCallOptions = {
+                method: "POST",
+                headers: {
+                    Authorization: token,
+                    'Content-type': 'application/json'
+                },
                 body: JSON.stringify(presenteeInfo)
             }
             let response = await fetch(
             apiHost + 'presentee', apiCallOptions
             );
-            let gifteeJson = await response.json();
-            return gifteeJson;
+            let presenteeJson = await response.json();
+            console.log('presenteeJson :', presenteeJson);
+            return presenteeJson;
         } catch (error) {
             console.error(error);
         }
