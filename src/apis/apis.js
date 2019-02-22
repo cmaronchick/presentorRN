@@ -62,5 +62,24 @@ export default {
         } catch (error) {
             console.error(error);
         }
+    },
+    async giftSearch(token, giftSearchTerm) {
+        console.log('giftSearchTerm :', giftSearchTerm);
+        try {
+            let apiCallOptions = {
+                method: "GET",
+                headers: {
+                    Authorization: token,
+                }
+            }
+            let response = await fetch(
+            apiHost + 'gifts/' + giftSearchTerm, apiCallOptions
+            );
+            let giftSearchJson = await response.json();
+            console.log('giftSearchJson :', giftSearchJson);
+            return giftSearchJson;
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

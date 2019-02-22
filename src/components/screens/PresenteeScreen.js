@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { 
     SafeAreaView,
+    ScrollView,
     View,
     Text,
     StyleSheet,
@@ -8,6 +9,7 @@ import {
     Modal,
     TouchableOpacity,
     Alert,
+    ActivityIndicator,
 } from "react-native";
 import DatePicker from 'react-native-datepicker'
 import uuid from 'uuid'
@@ -99,7 +101,13 @@ class PresenteeScreen extends Component {
         addingDate: false,
         addingDateUUID: null,
         addingDateName: null,
-        addingDateDate: null
+        addingDateDate: null,
+        addingGift: false,
+        addingGiftUUID: null,
+        addingGiftName: null,
+        addingGiftDate: null,
+        searchingGifts: false,
+        giftSearchResults: [],
     }
 
     onChangeText(key, value) {
@@ -107,9 +115,22 @@ class PresenteeScreen extends Component {
         tempPresentee[key] = value
         this.setState({presentee: tempPresentee})
     }
+
+    async onChangeTextGift(value) {
+        this.setState({searchingGifts: true})
+        await Auth.currentAuthenticatedUser()
+        .then(async (user) => {
+            await apis.giftSearch(user.signInUserSession.idToken.jwtToken,value)
+            .then((giftSearchResults) => {
+                console.log('giftSearchResults :', giftSearchResults);
+                this.setState({ searchingGifts: false, giftSearchResults })
+
+            })
+        })
+    }
     addItem = async (arrayName, addItem) => {
         var tempPresentee = this.state.presentee;
-        var addItemObj
+        var addItemObj;
         tempPresentee[arrayName].push(addItem)
         await this.setState({
             presentee: tempPresentee
@@ -183,7 +204,7 @@ class PresenteeScreen extends Component {
         //let { presentee } = this.props
         return (
             <SafeAreaView style={signInStyles.container}>
-                <View style={styles.presenteeContainer}>
+                <ScrollView style={styles.presenteeContainer}>
                     <View style={{flex: 1, flexDirection: 'row', justifyContent: "space-evenly"}}>
                         <Text>{presentee.firstName} {presentee.lastName}</Text>
                         <TouchableOpacity onPress={() => this.showModal()}><Text>Edit</Text></TouchableOpacity>
@@ -316,6 +337,16 @@ class PresenteeScreen extends Component {
                                 )
                             }
                             />
+                            <TouchableOpacity onPress={() => {
+                                var uuidVal = uuid();
+                                this.setState({
+                                    addingGiftUUID: uuidVal,
+                                    addingGift: true
+                                })
+                            }}
+                            style={signInStyles.buttonStyle}>
+                                <Text>Add a Gift for this Presentee</Text>
+                            </TouchableOpacity>
                         </View>
                     ) :
                         <TouchableOpacity onPress={() => {
@@ -330,7 +361,7 @@ class PresenteeScreen extends Component {
                         </TouchableOpacity>
                     }
                     <View style={styles.container}>
-                        {this.state.addingDate ? (
+                        {this.state.addingGift ? (
                             <View style={{width: 300, height: 100, flexDirection: 'column', justifyContent: 'space-between', backgroundColor: ''}}>
 
                             <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
@@ -343,46 +374,41 @@ class PresenteeScreen extends Component {
                                         secureTextEntry={false}
                                         ref='FirstInput'
                                         onChangeText={(val) => {
-                                            this.onChangeText('addingGiftName', val)}
+                                            this.onChangeTextGift(val)}
                                         }
                                         />
                             </Item>
-                            <Item>
-                                <DatePicker
-                                        date={this.state.addingDateDate}
-                                        mode="date"
-                                        placeholder="select date"
-                                        format="YYYY-MM-DD"
-                                        confirmBtnText="Confirm"
-                                        cancelBtnText="Cancel"
-                                        customStyles={{
-                                        dateIcon: {
-                                            position: 'absolute',
-                                            left: 0,
-                                            top: 4,
-                                            marginLeft: 0
-                                        },
-                                        dateInput: {
-                                            marginLeft: 36
-                                        }
-                                        // ... You can check the source to find the other keys.
-                                        }}
-                                        onDateChange={(date) => {
-                                            this.setState({
-                                                addingGiftDate: date
-                                            })
-                                        }}
+                            {this.state.searchingGifts ? (
+                                <ActivityIndicator size="large" color="#fff" />
+                            ) : null }
+                            {this.state.giftSearchResults.length ? (
+                                <View style={styles.container}>
+                                    <FlatList
+                                        data={this.state.giftSearchResults}
+                                        keyExtractor={({item, index}) => index}
+                                        renderItem={({item, index}) => (    
+                                            <View style={styles.dateRow}>
+                                                <Text>{item.name}</Text>
+                                            </View>
+                                        )
+                                    }
                                     />
-                            </Item>
-                            <TouchableOpacity 
-                            style={signInStyles.buttonStyle}
-                            disabled={(!this.state.addingDateName || !this.state.addingDateDate)} 
-                             onPress={async () => {
-                                 await this.addDate()
-                                 await this.updatePresentee()
-                                } }>
-                                <Text>Save</Text>
-                            </TouchableOpacity>                            
+
+                                    {/* <TouchableOpacity 
+                                    style={signInStyles.buttonStyle}
+                                    disabled={(!this.state.addingDateName || !this.state.addingDateDate)} 
+                                    onPress={async () => {
+                                        await this.addDate()
+                                        await this.updatePresentee()
+                                        } }>
+                                        <Text>Save</Text>
+                                    </TouchableOpacity>  */}
+                                </View>
+                            ) : (
+                                <View style={styles.container}>
+                                    <Text>No Search Results</Text>
+                                </View>
+                            ) }                          
                             </View>
                         ) : (
                             <TouchableOpacity onPress={() => {
@@ -445,7 +471,7 @@ class PresenteeScreen extends Component {
                             </View>
                         </View>
                     </Modal>
-                </View>
+                </ScrollView>
             </SafeAreaView>
         );
     }
