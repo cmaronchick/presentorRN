@@ -130,7 +130,6 @@ class PresenteeScreen extends Component {
     }
     addItem = async (arrayName, addItem) => {
         var tempPresentee = this.state.presentee;
-        var addItemObj;
         tempPresentee[arrayName].push(addItem)
         await this.setState({
             presentee: tempPresentee
@@ -387,9 +386,11 @@ class PresenteeScreen extends Component {
                                         data={this.state.giftSearchResults}
                                         keyExtractor={({item, index}) => index}
                                         renderItem={({item, index}) => (    
-                                            <View style={styles.dateRow}>
-                                                <Text>{item.name}</Text>
-                                            </View>
+                                            <TouchableOpacity onPress={() => this.selectGift()}>
+                                                <View style={styles.dateRow}>
+                                                    <Text>{item.name}</Text>
+                                                </View>
+                                            </TouchableOpacity>
                                         )
                                     }
                                     />
