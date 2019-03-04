@@ -20,7 +20,6 @@ export default class AuthLoadingScreen extends React.Component {
     loadApp = async() => {
         await Auth.currentAuthenticatedUser()
         .then(user => {
-            console.log('user: ', user)
             this.setState({userToken:     user.signInUserSession.accessToken.jwtToken})
         })
         .catch(async (err) => {

@@ -1,6 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
+import Expo from 'expo'
 import React from 'react'
 import {
     TouchableOpacity,
@@ -24,6 +25,7 @@ import {
       Item,
       Input,
       Icon,
+      Button
   } from 'native-base'
   import styles from '../styles/signIn'
   const logo = require('../images/logo.jpg')
@@ -38,8 +40,8 @@ import {
     state = {
         username: '',
         password: '',
-        firstname: '',
-        lastname: '',
+        givenName: '',
+        familyName: '',
         email: '',
         phoneNumber: '',
         authCode: '',
@@ -55,15 +57,19 @@ import {
 
     // Sign up user with AWS Amplify Auth
     async signUp() {
-        const { username, password, firstname, lastname, email, phoneNumber } = this.state
+        const { username, password, givenName, familyName, email, phoneNumber } = this.state
         // rename variable to conform with Amplify Auth field phone attribute
         const phone_number = phoneNumber
+        const given_name = givenName;
+        const family_name = familyName
         await Auth.signUp({
             username,
             password,
-            firstname,
-            lastname,
-            attributes: { email, phone_number }
+            attributes: { 
+                given_name,
+                family_name,
+                email,
+                phone_number }
             })
             .then((response) => {
             this.setState({user: response.user})
@@ -79,31 +85,56 @@ import {
             }
         })
     }
+    
+    async signUpwithFacebook() {
+        const { type, token, expires } = await Expo.Facebook.logInWithReadPermissionsAsync('405055010060445', {
+            permissions: ['public_profile','email','user_friends'],
+        });
+        if (type === 'success') {
+        // sign in with federated identity
+        Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+            .then(credentials => {
+            console.log('get aws credentials', credentials);
+            }).catch(e => {
+            console.log(e);
+            });
+        }
+    }
+
+    // ...
+
+    render() {
+        return (
+        <View style={styles.container}>
+            <Button title="FBSignIn" onPress={this.signIn.bind(this)} />
+        </View>
+        );
+    }
     componentDidMount() {
         this.fadeIn()
-      }
-      fadeIn() {
+    }
+    fadeIn() {
         Animated.timing(
         this.state.fadeIn,
         {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: true})
-      }
-      fadeOut() {
+    }
+    fadeOut() {
         Animated.timing(
         this.state.fadeOut,
         {
-          toValue: 0, // 1 in the SignInScreen component
-          duration: 700,
-          useNativeDriver: true
+            toValue: 0, // 1 in the SignInScreen component
+            duration: 700,
+            useNativeDriver: true
         }
         ).start()
         this.setState({isHidden: false})
-      }
+    }
     // Functions for Phone Input
     showModal() {
         this.setState({ modalVisible: true })
@@ -162,7 +193,8 @@ import {
                     }
                 </View>
                 <Container style={styles.infoContainer}>
-                    <ScrollView contentContainerStyle={[styles.container, {paddingTop: 270}]}>
+                    <ScrollView contentContainerStyle={styles.container}>
+                    <Button onPress={() => this.signUpwithFacebook()} primary />
                     {/* username section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -247,12 +279,12 @@ import {
                         secureTextEntry={false}
                         ref='FourthInput'
                         onSubmitEditing={(event) => {this.refs.FifthInput._root.focus()}}
-                        onChangeText={value => this.onChangeText('firstname', value)}
+                        onChangeText={value => this.onChangeText('givenName', value)}
                         onFocus={() => this.fadeOut()}
                         onEndEditing={() => this.fadeIn()}
                         />
                     </Item>
-                    {/* <Item rounded style={styles.itemStyle}>
+                    <Item rounded style={styles.itemStyle}>
                         <Icon
                         active
                         name='person'
@@ -268,11 +300,11 @@ import {
                         secureTextEntry={false}
                         ref='FifthInput'
                         onSubmitEditing={(event) => {this.refs.SixthInput._root.focus()}}
-                        onChangeText={value => this.onChangeText('lastname', value)}
+                        onChangeText={value => this.onChangeText('familyName', value)}
                         onFocus={() => this.fadeOut()}
                         onEndEditing={() => this.fadeIn()}
                         />
-                    </Item> */}
+                    </Item>
                     {/* phone section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -342,39 +374,6 @@ import {
                         style={styles.buttonStyle} onPress={() => this.signUp()}>
                         <Text style={styles.buttonText}>
                         Sign Up
-                        </Text>
-                    </TouchableOpacity>
-                    {/* code confirmation section  */}
-                    <Item rounded style={styles.itemStyle}>
-                        <Icon
-                        active
-                        name='md-apps'
-                        style={styles.iconStyle}
-                        />
-                        <Input
-                        style={styles.input}
-                        placeholder='Confirmation code'
-                        placeholderTextColor='#adb4bc'
-                        keyboardType={'numeric'}
-                        returnKeyType='done'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        secureTextEntry={false}
-                        onChangeText={value => this.onChangeText('authCode', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
-                        />
-                    </Item>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.confirmSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Confirm Sign Up
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.resendSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Resend code
                         </Text>
                     </TouchableOpacity>
                     </ScrollView>

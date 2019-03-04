@@ -176,6 +176,7 @@ import {
                         returnKeyType='done'
                         autoCapitalize='none'
                         autoCorrect={false}
+                        ref='SecondInput'
                         secureTextEntry={false}
                         onChangeText={value => this.onChangeText('authCode', value)}
                         onFocus={() => this.fadeOut()}
