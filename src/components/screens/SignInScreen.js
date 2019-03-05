@@ -1,6 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
+import Expo, { Facebook } from 'expo'
 import React from 'react'
 import {
     StyleSheet,
@@ -82,17 +83,23 @@ const logo = require('../images/logo.jpg')
 
       
       async signInwithFacebook() {
-        const { type, token, expires } = await Expo.Facebook.logInWithReadPermissionsAsync('405055010060445', {
-            permissions: ['public_profile', 'email','user_friends'],
-          });
-        if (type === 'success') {
-          // sign in with federated identity
-          Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
-            .then(credentials => {
-              console.log('get aws credentials', credentials);
-            }).catch(e => {
-              console.log(e);
-            });
+        try {
+          const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+            permissions: ['public_profile']
+          })
+          console.log('type: ', type)
+          if (type === 'success') {
+            // sign in with federated identity
+            Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+              .then(credentials => {
+                console.log('get aws credentials', credentials);
+              }).catch(e => {
+                console.log(e);
+              });
+          }
+        }
+        catch (FBError) {
+          console.log('FBError: ', FBError)
         }
       }
 
@@ -117,8 +124,9 @@ const logo = require('../images/logo.jpg')
                     </View>
                     <Container style={styles.infoContainer}>
                         <View style={styles.container}>
-                          <Button primary onPress={() => this.signInwithFacebook()}>
-                            <Text>Sign In with Facebook</Text>
+                          <Button primary onPress={() => this.signInwithFacebook()}
+                            style={styles.buttonStyle}>
+                            <Text style={styles.buttonText}>Sign In with Facebook</Text>
                           </Button>
                         </View>
                         <View style={styles.container}>

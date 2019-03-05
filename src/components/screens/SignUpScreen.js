@@ -1,7 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
-import Expo from 'expo'
+import Expo, { Facebook } from 'expo'
 import React from 'react'
 import {
     TouchableOpacity,
@@ -87,29 +87,28 @@ import {
     }
     
     async signUpwithFacebook() {
-        const { type, token, expires } = await Expo.Facebook.logInWithReadPermissionsAsync('405055010060445', {
-            permissions: ['public_profile','email','user_friends'],
-        });
-        if (type === 'success') {
-        // sign in with federated identity
-        Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
-            .then(credentials => {
-            console.log('get aws credentials', credentials);
-            }).catch(e => {
-            console.log(e);
+        try {
+            const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+                permissions: ['public_profile','email','user_friends'],
+                behavior: 'web'
             });
+            console.log('type: ', type)
+            if (type === 'success') {
+            // sign in with federated identity
+            Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+                .then(credentials => {
+                console.log('get aws credentials', credentials);
+                }).catch(e => {
+                console.log(e);
+                });
+            }
+        }
+        catch (FBError) {
+            console.log('FBError: ', FBError)
         }
     }
 
     // ...
-
-    render() {
-        return (
-        <View style={styles.container}>
-            <Button title="FBSignIn" onPress={this.signIn.bind(this)} />
-        </View>
-        );
-    }
     componentDidMount() {
         this.fadeIn()
     }
@@ -194,7 +193,9 @@ import {
                 </View>
                 <Container style={styles.infoContainer}>
                     <ScrollView contentContainerStyle={styles.container}>
-                    <Button onPress={() => this.signUpwithFacebook()} primary />
+                    <Button onPress={() => this.signUpwithFacebook()} primary>
+                        <Text>Sign Up with Facebook</Text>
+                    </Button>
                     {/* username section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
