@@ -3,6 +3,7 @@ import Auth from '@aws-amplify/auth'
 
 import Expo, { Facebook } from 'expo'
 import React from 'react'
+import { Linking, Platform, SafariView } from 'react-native'
 import {
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -31,6 +32,7 @@ import {
   const logo = require('../images/logo.jpg')
 
   import countryCodeData from '../countryCode'
+import apis from '../../apis/apis';
   // Default render of country flag
   const defaultFlag = countryCodeData.filter(
     obj => obj.name === 'United Kingdom'
@@ -85,16 +87,46 @@ import {
             }
         })
     }
+
+    handleOpenURL = async ({ url }) => {
+      // Extract stringified user string out of the URL
+      const [, code] = url.match(/code=([^#]+)/);
+      if (code.indexOf("#") > -1) {
+        const code1 = code.split('#');
+        this.props.onPress(code1);;
+      } else {
+        console.log('code: ', code);
+        this.props.onPress(code);
+      }
+    }
+
+    // Open URL in a browser
+    openURL = (url) => {
+      // Use SafariView on iOS
+      if (Platform.OS === 'ios') {
+        SafariView.show({
+          url: url,
+          fromBottom: true,
+        });
+      }
+      // Or Linking.openURL on Android
+      else {
+        Linking.openURL(url);
+      }
+    };
     
-    async signUpwithFacebook() {
+    signUpwithFacebook = async () => {
         try {
-            const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
-                permissions: ['public_profile','email','user_friends'],
-                behavior: 'web'
-            });
-            const signUpAuthorize = await fetch('https://presentor.auth.us-east-1.amazoncognito.com/oauth2/authorize?redirect_uri=presentorRN://login&response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook')
-            console.log('signUpAuthorize: ', signUpAuthorize)
-            if (type === 'success') {
+            // const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+            //     permissions: ['public_profile','email','user_friends'],
+            //     behavior: 'web'
+            // });
+            const signUpAuthorize = this.openURL(
+                'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/authorize?redirect_uri=presentorRN://login&response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile'
+            )
+
+            
+            if (type && type === 'success') {
             // sign in with federated identity
             Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
                 .then(credentials => {
@@ -109,9 +141,21 @@ import {
         }
     }
 
-    // ...
     componentDidMount() {
-        this.fadeIn()
+        this.fadeIn();
+        
+        // Add event listener to handle OAuthLogin:// URLs
+        Linking.addEventListener('url', this.handleOpenURL);
+        // Launched from an external URL
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+            console.log('url: ', url);
+            this.handleOpenURL({ url });
+            }
+        })
+        .catch(LinkingError => console.log('LinkingError: ', LinkingError))
+
+
     }
     fadeIn() {
         Animated.timing(
