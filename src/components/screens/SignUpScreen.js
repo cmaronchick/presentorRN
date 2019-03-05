@@ -92,7 +92,8 @@ import {
                 permissions: ['public_profile','email','user_friends'],
                 behavior: 'web'
             });
-            console.log('type: ', type)
+            const signUpAuthorize = await fetch('https://presentor.auth.us-east-1.amazoncognito.com/oauth2/authorize?redirect_uri=presentorRN://login&response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook')
+            console.log('signUpAuthorize: ', signUpAuthorize)
             if (type === 'success') {
             // sign in with federated identity
             Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
