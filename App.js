@@ -62,7 +62,6 @@ const AuthStackNavigator = createStackNavigator({
       title: `Create a new password`,
     }),
   },
-
 });
 
 // Bottom Tabs

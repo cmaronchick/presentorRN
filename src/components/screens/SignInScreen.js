@@ -1,6 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
+import Expo, { Facebook } from 'expo'
 import React from 'react'
 import {
     StyleSheet,
@@ -16,7 +17,7 @@ import {
     Alert,
     Animated,
   } from 'react-native'
-import { Container, Item, Input, Icon } from 'native-base';
+import { Container, Item, Input, Icon, Button } from 'native-base';
 import styles from '../styles/signIn';
 const logo = require('../images/logo.jpg')
 
@@ -79,6 +80,29 @@ const logo = require('../images/logo.jpg')
             }
         })
       }
+
+      
+      async signInwithFacebook() {
+        try {
+          const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+            permissions: ['public_profile']
+          })
+          console.log('type: ', type)
+          if (type === 'success') {
+            // sign in with federated identity
+            Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+              .then(credentials => {
+                console.log('get aws credentials', credentials);
+              }).catch(e => {
+                console.log(e);
+              });
+          }
+        }
+        catch (FBError) {
+          console.log('FBError: ', FBError)
+        }
+      }
+
     render() {
         let { fadeOut, fadeIn, isHidden } = this.state
       return (
@@ -99,6 +123,12 @@ const logo = require('../images/logo.jpg')
                     }
                     </View>
                     <Container style={styles.infoContainer}>
+                        <View style={styles.container}>
+                          <Button primary onPress={() => this.signInwithFacebook()}
+                            style={styles.buttonStyle}>
+                            <Text style={styles.buttonText}>Sign In with Facebook</Text>
+                          </Button>
+                        </View>
                         <View style={styles.container}>
                         <Item rounded style={styles.itemStyle}>
                             <Icon

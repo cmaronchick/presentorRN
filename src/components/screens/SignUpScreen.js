@@ -1,6 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
+import Expo, { Facebook } from 'expo'
 import React from 'react'
 import {
     TouchableOpacity,
@@ -24,6 +25,7 @@ import {
       Item,
       Input,
       Icon,
+      Button
   } from 'native-base'
   import styles from '../styles/signIn'
   const logo = require('../images/logo.jpg')
@@ -83,6 +85,30 @@ import {
             }
         })
     }
+    
+    async signUpwithFacebook() {
+        try {
+            const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+                permissions: ['public_profile','email','user_friends'],
+                behavior: 'web'
+            });
+            console.log('type: ', type)
+            if (type === 'success') {
+            // sign in with federated identity
+            Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+                .then(credentials => {
+                console.log('get aws credentials', credentials);
+                }).catch(e => {
+                console.log(e);
+                });
+            }
+        }
+        catch (FBError) {
+            console.log('FBError: ', FBError)
+        }
+    }
+
+    // ...
     componentDidMount() {
         this.fadeIn()
     }
@@ -167,6 +193,9 @@ import {
                 </View>
                 <Container style={styles.infoContainer}>
                     <ScrollView contentContainerStyle={styles.container}>
+                    <Button onPress={() => this.signUpwithFacebook()} primary>
+                        <Text>Sign Up with Facebook</Text>
+                    </Button>
                     {/* username section  */}
                     <Item rounded style={styles.itemStyle}>
                         <Icon
@@ -348,39 +377,6 @@ import {
                         Sign Up
                         </Text>
                     </TouchableOpacity>
-                    {/* code confirmation section  */}
-                    {/* <Item rounded style={styles.itemStyle}>
-                        <Icon
-                        active
-                        name='md-apps'
-                        style={styles.iconStyle}
-                        />
-                        <Input
-                        style={styles.input}
-                        placeholder='Confirmation code'
-                        placeholderTextColor='#adb4bc'
-                        keyboardType={'numeric'}
-                        returnKeyType='done'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        secureTextEntry={false}
-                        onChangeText={value => this.onChangeText('authCode', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
-                        />
-                    </Item>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.confirmSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Confirm Sign Up
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.resendSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Resend code
-                        </Text>
-                    </TouchableOpacity> */}
                     </ScrollView>
                 </Container>
                 </View>
