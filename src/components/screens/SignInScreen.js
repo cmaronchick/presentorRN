@@ -1,7 +1,7 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
 
-import Expo, { Facebook } from 'expo'
+import Expo, { Facebook, AuthSession } from 'expo'
 import React from 'react'
 import {
     StyleSheet,
@@ -30,7 +30,7 @@ const logo = require('../images/logo.jpg')
           fadeIn: new Animated.Value(0),
           fadeOut: new Animated.Value(0),
           isHidden: false,
-          loginURL: 'https://presentor.auth.us-west-2.amazoncognito.com/login?redirect_uri=presentorRN://login&response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile'
+          loginURL: 'https://presentor.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile&redirect_uri='
       }
 
       handleOpenURL = async ({ url }) => {
@@ -51,7 +51,7 @@ const logo = require('../images/logo.jpg')
           grant_type: 'authorization_code',
           code,
           client_id: '10eavoe3ufj2d70m5m3m2hl4pl',
-          redirect_uri: 'presentorRN://'
+          redirect_uri: AuthSession.getRedirectUrl()
         }
         const formBody = Object.keys(details)
           .map(
@@ -79,6 +79,9 @@ const logo = require('../images/logo.jpg')
 
       // Open URL in a browser
       openURL = (url) => {
+        let redirectURL = AuthSession.getRedirectUrl()
+        url += `${url}${encodeURIComponent(redirectURL)}`
+        console.log('url :', url);
         // Use SafariView on iOS
         if (Platform.OS === 'ios') {
           SafariView.show({

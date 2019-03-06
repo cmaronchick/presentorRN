@@ -111,6 +111,7 @@ import apis from '../../apis/apis';
       }
       // Or Linking.openURL on Android
       else {
+          console.log('url :', url);
         Linking.openURL(url);
       }
     };
