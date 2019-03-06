@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
+    KeyboardAvoidingView
 } from "react-native";
 import DatePicker from 'react-native-datepicker'
 import uuid from 'uuid'
@@ -137,7 +138,7 @@ class PresenteeScreen extends Component {
         await this.setState({
             presentee: tempPresentee
         })
-        console.log('this.state :', this.state);
+        console.log('addItem state :', this.state);
     }
     clearGift() {
         this.setState({
@@ -371,7 +372,7 @@ class PresenteeScreen extends Component {
                     ) : null }
                     <View style={styles.container}>
                         {this.state.addingGift ? (
-                            <View style={{flex: 1, flexDirection: 'column', justifyContent: 'space-between', width: 300}}>
+                            <KeyboardAvoidingView style={{flex: 1, flexDirection: 'column', justifyContent: 'space-between', width: 300}}>
 
                             <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
                                 <Input
@@ -414,10 +415,8 @@ class PresenteeScreen extends Component {
                                         <Container style={[signInStyles.infoContainer, { alignItems: 'flex-start', justifyContent: 'space-between'}]}>
                                             <TouchableOpacity 
                                             style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
-                                            disabled={!this.state.searchTerm}
                                             onPress={async () => {
-                                                await this.addItem('gifts', this.state.selectedSearchResult ? this.state.selectedSearchResult : { name: this.state.addingGiftName, id: this.state.addingDateUUID })
-                                                await this.updatePresentee()
+                                                this.addItem('gifts', this.state.selectedSearchResult ? this.state.selectedSearchResult : { name: this.state.addingGiftName, id: this.state.addingDateUUID })
                                                 } }>
                                                 <Text style={signInStyles.buttonText}>Save</Text>
                                             </TouchableOpacity> 
@@ -439,9 +438,32 @@ class PresenteeScreen extends Component {
                             ) : (
                                 <View style={styles.container}>
                                     <Text>No Search Results</Text>
+                                    
+                                    <Container style={[signInStyles.infoContainer, { alignItems: 'flex-start', justifyContent: 'space-between'}]}>
+                                            <TouchableOpacity 
+                                            style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
+                                            onPress={async () => { 
+                                                this.addItem('gifts', { name: this.state.addingGiftName, id: this.state.addingDateUUID })
+                                                } }>
+                                                <Text style={signInStyles.buttonText}>Save</Text>
+                                            </TouchableOpacity> 
+                                        {/* </View>
+                                        <View style={signInStyles.container}> */}
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    this.clearGift()
+                                                }}
+                                                style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}>
+                                                <Text style={signInStyles.buttonText}>
+                                                    Cancel
+                                                </Text>
+                                            </TouchableOpacity>
+                                        {/* </View>
+                                    </View> */}
+                                        </Container>
                                 </View>
                             ) }                          
-                            </View>
+                            </KeyboardAvoidingView>
                         ) : null}
                     </View>
                     <PresenteeModal modalVisible={this.state.modalVisible} presentee={this.state.presentee} onSave={() => this.updatePresentee()} onClose={() => this.hideModal()} />
