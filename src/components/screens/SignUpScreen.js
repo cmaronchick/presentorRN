@@ -1,6 +1,20 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
+import config from '../../aws-exports'
+import { 
+  CognitoUser, 
+  CognitoIdToken, 
+  CognitoAccessToken, 
+  CognitoRefreshToken, 
+  CognitoUserSession, 
+  CognitoUserPool } from 'amazon-cognito-identity-js';
+import jwt from 'jwt-decode'
+const userPool = new CognitoUserPool({
+  UserPoolId: config.aws_user_pools_id,
+  ClientId: config.aws_user_pools_web_client_id
+});
 
+import { AuthSession } from 'expo'
 import React from 'react'
 import {
     TouchableOpacity,
@@ -24,11 +38,13 @@ import {
       Item,
       Input,
       Icon,
+      Button,
   } from 'native-base'
   import styles from '../styles/signIn'
   const logo = require('../images/logo.jpg')
 
   import countryCodeData from '../countryCode'
+import apis from '../../apis/apis';
   // Default render of country flag
   const defaultFlag = countryCodeData.filter(
     obj => obj.name === 'United Kingdom'
@@ -47,7 +63,8 @@ import {
         modalVisible: false,
         fadeIn: new Animated.Value(0),  // Initial value for opacity: 0
         fadeOut: new Animated.Value(1),  // Initial value for opacity: 1
-        isHidden: false
+        isHidden: false,
+        signUpURL: `https://presentor.auth.us-west-2.amazoncognito.com/signup?response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&redirect_uri=${encodeURIComponent(AuthSession.getRedirectUrl())}&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile`
     }
     onChangeText(key, value) {
         this.setState({[key]: value})
@@ -83,8 +100,76 @@ import {
             }
         })
     }
+
+    
+    getTokenbyCode = async (code) => {
+        const details = {
+          grant_type: 'authorization_code',
+          code,
+          client_id: '10eavoe3ufj2d70m5m3m2hl4pl',
+          redirect_uri: AuthSession.getRedirectUrl()
+        }
+        const formBody = Object.keys(details)
+          .map(
+            key => `${encodeURIComponent(key)}=${encodeURIComponent(details[key])}`
+          )
+          .join("&");
+
+        await fetch(
+          'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/token',
+          {
+            method: "POST",
+            headers: {
+              'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: formBody
+          }
+        )
+          .then(async (res) => {
+            console.log('res: ', res)
+            let tokenRequestJson = await res.json();
+            console.log('tokenRequestJson: ', tokenRequestJson)
+            const IdToken = new CognitoIdToken({ IdToken: tokenRequestJson.id_token });
+            const AccessToken = new CognitoAccessToken({ AccessToken: tokenRequestJson.access_token });
+            const RefreshToken = new CognitoRefreshToken({ RefreshToken: tokenRequestJson.refresh_token })
+            try {
+              let userSession = new CognitoUserSession({ IdToken, AccessToken, RefreshToken });
+              console.log('userSession: ', userSession);
+              const userData = {
+                Username: userSession.idToken.payload.email,
+                Pool: userPool
+              };
+              console.log('userData: ', userData);
+              cognitoUser = new CognitoUser(userData);
+              cognitoUser.setSignInUserSession(userSession);
+              cognitoUser.getSession((err, session) => { // You must run this to verify that session (internally)
+                if (session.isValid()) {
+                  console.log('session is valid');
+                  this.setState({user: cognitoUser})
+                  this.props.navigation.navigate('AuthLoading')
+                } else {
+                  console.log('session is not valid: ', session);
+                }
+              })
+            }
+            catch (FBSignInError) {
+              console.log('FBSignInError: ', FBSignInError)
+            }
+          })
+          .catch(error => {
+            console.log('error: ', error);
+          });
+      }
+
+    // Open URL in a browser
+    openURL = async (url) => {
+    let result = await AuthSession.startAsync({ authUrl: url })
+    console.log('result: ', result)
+    this.getTokenbyCode(result.params.code)
+    };
+
     componentDidMount() {
-        this.fadeIn()
+        this.fadeIn();
     }
     fadeIn() {
         Animated.timing(
@@ -342,45 +427,16 @@ import {
 
                     </Item>
                     {/* End of phone input */}
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.signUp()}>
+                    <Button
+                        style={styles.buttonStyle} onPress={() => this.signUp()}  containerViewStyle={{width: '100%',marginLeft: 0}}>
                         <Text style={styles.buttonText}>
                         Sign Up
                         </Text>
-                    </TouchableOpacity>
-                    {/* code confirmation section  */}
-                    {/* <Item rounded style={styles.itemStyle}>
-                        <Icon
-                        active
-                        name='md-apps'
-                        style={styles.iconStyle}
-                        />
-                        <Input
-                        style={styles.input}
-                        placeholder='Confirmation code'
-                        placeholderTextColor='#adb4bc'
-                        keyboardType={'numeric'}
-                        returnKeyType='done'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        secureTextEntry={false}
-                        onChangeText={value => this.onChangeText('authCode', value)}
-                        onFocus={() => this.fadeOut()}
-                        onEndEditing={() => this.fadeIn()}
-                        />
-                    </Item>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.confirmSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Confirm Sign Up
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonStyle} onPress={() => this.resendSignUp()}>
-                        <Text style={styles.buttonText}>
-                        Resend code
-                        </Text>
-                    </TouchableOpacity> */}
+                    </Button>
+                    
+                    <Button onPress={() => this.openURL(this.state.signUpURL)} primary style={[styles.buttonStyle, {backgroundColor: '#3b5998'}]} containerViewStyle={{width: '100%',marginLeft: 0}}>
+                        <Text style={styles.buttonText}>Sign Up with Facebook</Text>
+                    </Button>
                     </ScrollView>
                 </Container>
                 </View>

@@ -24,6 +24,7 @@ import Auth from '@aws-amplify/auth'
 import apis from '../../apis/apis'
 
 import signInStyles from '../styles/signIn'
+import PresenteeModal from './PresenteeModal'
 //import Accordion from 'react-native-accordion'
 // import { FlatList } from "react-native-gesture-handler";
 
@@ -107,7 +108,9 @@ class PresenteeScreen extends Component {
         addingGiftName: null,
         addingGiftDate: null,
         searchingGifts: false,
+        searchTerm: null,
         giftSearchResults: [],
+        selectedSearchResult: null,
     }
 
     onChangeText(key, value) {
@@ -135,6 +138,18 @@ class PresenteeScreen extends Component {
             presentee: tempPresentee
         })
         console.log('this.state :', this.state);
+    }
+    clearGift() {
+        this.setState({
+            addingGift: false,
+            addingGiftUUID: null,
+            addingGiftName: null,
+            addingGiftDate: null,
+            searchingGifts: false,
+            searchTerm: null,
+            giftSearchResults: [],
+            selectedSearchResult: null,
+        })
     }
     updatePresentee = async () => {
         await Auth.currentAuthenticatedUser()
@@ -205,8 +220,13 @@ class PresenteeScreen extends Component {
             <SafeAreaView style={signInStyles.container}>
                 <ScrollView style={styles.presenteeContainer}>
                     <View style={{flex: 1, flexDirection: 'row', justifyContent: "space-evenly"}}>
-                        <Text>{presentee.firstName} {presentee.lastName}</Text>
-                        <TouchableOpacity onPress={() => this.showModal()}><Text>Edit</Text></TouchableOpacity>
+                        <Text
+                            style={{fontWeight: '500', fontSize: 18, marginTop: 12 }}>{presentee.firstName} {presentee.lastName}</Text>
+                        <TouchableOpacity 
+                            style={signInStyles.buttonStyle}
+                            onPress={() => this.showModal()}>
+                            <Text style={signInStyles.buttonText}>Edit</Text>
+                        </TouchableOpacity>
                     </View>
                     {presentee.keyDates ? (
                         <View style={signInStyles.container}>
@@ -315,14 +335,11 @@ class PresenteeScreen extends Component {
                         )}
                     </View>
 
-                    {presentee.gifts ? (
+                    {this.state.presentee.gifts ? (
                         <View style={signInStyles.container}>
                             <Text style={styles.sectionHeader}>Gifts</Text>
                             <FlatList
-                                data={presentee.gifts.sort((a,b) => {
-                                    if (a.date > b.date) return 1;
-                                    return -1;
-                                })}
+                                data={this.state.presentee.gifts}
                                 keyExtractor={({item, index}) => index}
                                 renderItem={({item, index}) => (    
                                     <View style={styles.dateRow}>
@@ -336,6 +353,11 @@ class PresenteeScreen extends Component {
                                 )
                             }
                             />
+                        </View>
+                    ) : null
+                    }
+
+                    {!this.state.addingGift ? (
                             <TouchableOpacity onPress={() => {
                                 var uuidVal = uuid();
                                 this.setState({
@@ -346,22 +368,10 @@ class PresenteeScreen extends Component {
                             style={signInStyles.buttonStyle}>
                                 <Text>Add a Gift for this Presentee</Text>
                             </TouchableOpacity>
-                        </View>
-                    ) :
-                        <TouchableOpacity onPress={() => {
-                            var uuidVal = uuid();
-                            this.setState({
-                                addingGiftUUID: uuidVal,
-                                addingGift: true
-                            })
-                        }}
-                        style={signInStyles.buttonStyle}>
-                            <Text>Add a Gift for this Presentee</Text>
-                        </TouchableOpacity>
-                    }
+                    ) : null }
                     <View style={styles.container}>
                         {this.state.addingGift ? (
-                            <View style={{width: 300, height: 100, flexDirection: 'column', justifyContent: 'space-between', backgroundColor: ''}}>
+                            <View style={{flex: 1, flexDirection: 'column', justifyContent: 'space-between', width: 300}}>
 
                             <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
                                 <Input
@@ -382,28 +392,49 @@ class PresenteeScreen extends Component {
                             ) : null }
                             {this.state.giftSearchResults.length ? (
                                 <View style={styles.container}>
-                                    <FlatList
-                                        data={this.state.giftSearchResults}
-                                        keyExtractor={({item, index}) => index}
-                                        renderItem={({item, index}) => (    
-                                            <TouchableOpacity onPress={() => this.selectGift()}>
+                                        <FlatList
+                                            data={this.state.giftSearchResults}
+                                            keyExtractor={({item, index}) => index}
+                                            renderItem={({item, index}) => (
                                                 <View style={styles.dateRow}>
-                                                    <Text>{item.name}</Text>
+                                                    <Item style={signInStyles.itemStyle}>    
+                                                        <TouchableOpacity onPress={() => {
+                                                            this.setState({selectedSearchResult: item})
+                                                        }
+                                                        }>
+                                                                <Text style={signInStyles.textStyle}>{item.name}</Text>
+                                                        </TouchableOpacity>
+                                                    </Item>
                                                 </View>
+                                            )
+                                        }
+                                        />
+                                    {/* <View style={{padding: 20,flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <View style={signInStyles.container}> */}
+                                        <Container style={[signInStyles.infoContainer, { alignItems: 'flex-start', justifyContent: 'space-between'}]}>
+                                            <TouchableOpacity 
+                                            style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
+                                            disabled={!this.state.searchTerm}
+                                            onPress={async () => {
+                                                await this.addItem('gifts', this.state.selectedSearchResult ? this.state.selectedSearchResult : { name: this.state.addingGiftName, id: this.state.addingDateUUID })
+                                                await this.updatePresentee()
+                                                } }>
+                                                <Text style={signInStyles.buttonText}>Save</Text>
+                                            </TouchableOpacity> 
+                                        {/* </View>
+                                        <View style={signInStyles.container}> */}
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    this.clearGift()
+                                                }}
+                                                style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}>
+                                                <Text style={signInStyles.buttonText}>
+                                                    Cancel
+                                                </Text>
                                             </TouchableOpacity>
-                                        )
-                                    }
-                                    />
-
-                                    {/* <TouchableOpacity 
-                                    style={signInStyles.buttonStyle}
-                                    disabled={(!this.state.addingDateName || !this.state.addingDateDate)} 
-                                    onPress={async () => {
-                                        await this.addDate()
-                                        await this.updatePresentee()
-                                        } }>
-                                        <Text>Save</Text>
-                                    </TouchableOpacity>  */}
+                                        {/* </View>
+                                    </View> */}
+                                        </Container>
                                 </View>
                             ) : (
                                 <View style={styles.container}>
@@ -411,67 +442,9 @@ class PresenteeScreen extends Component {
                                 </View>
                             ) }                          
                             </View>
-                        ) : (
-                            <TouchableOpacity onPress={() => {
-                                var uuidVal = uuid();
-                                this.setState({
-                                    addingDateUUID: uuidVal,
-                                    addingDate: true
-                                })
-                            }} style={signInStyles.buttonStyle}>
-                                <Text>Add Gift Occasions</Text>
-                            </TouchableOpacity>
-                        )}
+                        ) : null}
                     </View>
-                    <Modal
-                        style={styles.container}
-                        animationStyle="slide"
-                        transparent={false}
-                        visible={this.state.modalVisible}
-                        onRequestClose={() => { console.log('Modal closed')}}>
-                        <View style={styles.container}>
-                                <Text>First Name</Text>
-                                <Input
-                                style={signInStyles.input}
-                                value={this.state.presentee.firstName}
-                                returnKeyType='done'
-                                autoCapitalize='words'
-                                autoCorrect={false}
-                                secureTextEntry={false}
-                                ref='FirstInput'
-                                onChangeText={(val) => this.onChangeText('firstName', val)}
-                                />
-                                <Text>Last Name</Text>
-                                <Input
-                                style={signInStyles.input}
-                                value={this.state.presentee.lastName}
-                                returnKeyType='done'
-                                autoCapitalize='words'
-                                autoCorrect={false}
-                                secureTextEntry={false}
-                                ref='FirstInput'
-                                onChangeText={(val) => this.onChangeText('lastName', val)}
-                                />
-                            <View style={{padding: 20,flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
-                                <TouchableOpacity
-                                    onPress={() => this.updatePresentee()}
-                                    style={styles.closeButtonStyle}>
-                                    <Text style={styles.textStyle}>
-                                        Update {this.state.presentee.firstName}
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        this.hideModal()
-                                    }}
-                                    style={styles.closeButtonStyle}>
-                                    <Text style={styles.textStyle}>
-                                        Close
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>
+                    <PresenteeModal modalVisible={this.state.modalVisible} presentee={this.state.presentee} onSave={() => this.updatePresentee()} onClose={() => this.hideModal()} />
                 </ScrollView>
             </SafeAreaView>
         );
@@ -495,5 +468,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         textAlignVertical: 'center',
         padding: 10,
-    }
+    },
+    dateRowSelected: {
+        backgroundColor: '#ccc'
+    },
+    presenteeButtonStyle: {
+        marginHorizontal: 5
+    },
 });
