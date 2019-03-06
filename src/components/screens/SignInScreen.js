@@ -1,7 +1,20 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
+import config from '../../aws-exports'
+import { 
+  CognitoUser, 
+  CognitoIdToken, 
+  CognitoAccessToken, 
+  CognitoRefreshToken, 
+  CognitoUserSession, 
+  CognitoUserPool } from 'amazon-cognito-identity-js';
+import jwt from 'jwt-decode'
+const userPool = new CognitoUserPool({
+  UserPoolId: config.aws_user_pools_id,
+  ClientId: config.aws_user_pools_web_client_id
+});
 
-import Expo, { Facebook, AuthSession, WebBrowser } from 'expo'
+import { AuthSession } from 'expo'
 import React from 'react'
 import {
     StyleSheet,
@@ -23,6 +36,7 @@ import {
 //import SafariView from 'react-native-safari-view'
 import { Container, Item, Input, Icon, Button } from 'native-base';
 import styles from '../styles/signIn';
+
 const logo = require('../images/logo.jpg')
 
   export default class SignInScreen extends React.Component {
@@ -35,20 +49,7 @@ const logo = require('../images/logo.jpg')
           loginURL: `https://presentor.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&redirect_uri=${encodeURIComponent(AuthSession.getRedirectUrl())}&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile`
       }
 
-      handleOpenURL = async ({ url }) => {
-        console.log('url: ', url)
-        // Extract stringified user string out of the URL
-        const [, code] = url.match(/code=([^#]+)/);
-        if (code.indexOf("#") > -1) {
-          const code1 = code.split('#');
-          this.getTokenbyCode(code1);
-        } else {
-          console.log('code: ', code);
-          this.getTokenbyCode(code);
-        }
-      }
-
-      getTokenbyCode = code => {
+      getTokenbyCode = async (code) => {
         const details = {
           grant_type: 'authorization_code',
           code,
@@ -61,7 +62,7 @@ const logo = require('../images/logo.jpg')
           )
           .join("&");
 
-        fetch(
+        await fetch(
           'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/token',
           {
             method: "POST",
@@ -71,8 +72,34 @@ const logo = require('../images/logo.jpg')
             body: formBody
           }
         )
-          .then(res => {
-            console.log('res: ', res);
+          .then(async (res) => {
+            let tokenRequestJson = await res.json();
+            const IdToken = new CognitoIdToken({ IdToken: tokenRequestJson.id_token });
+            const AccessToken = new CognitoAccessToken({ AccessToken: tokenRequestJson.access_token });
+            const RefreshToken = new CognitoRefreshToken({ RefreshToken: tokenRequestJson.refresh_token })
+            try {
+              let userSession = new CognitoUserSession({ IdToken, AccessToken, RefreshToken });
+              console.log('userSession: ', userSession);
+              const userData = {
+                Username: userSession.idToken.payload.email,
+                Pool: userPool
+              };
+              console.log('userData: ', userData);
+              cognitoUser = new CognitoUser(userData);
+              cognitoUser.setSignInUserSession(userSession);
+              cognitoUser.getSession((err, session) => { // You must run this to verify that session (internally)
+                if (session.isValid()) {
+                  console.log('session is valid');
+                  this.setState({user: cognitoUser})
+                  this.props.navigation.navigate('AuthLoading')
+                } else {
+                  console.log('session is not valid: ', session);
+                }
+              })
+            }
+            catch (FBSignInError) {
+              console.log('FBSignInError: ', FBSignInError)
+            }
           })
           .catch(error => {
             console.log('error: ', error);
@@ -81,25 +108,11 @@ const logo = require('../images/logo.jpg')
 
       // Open URL in a browser
       openURL = async (url) => {
-        // let redirectURL = AuthSession.getRedirectUrl()
-        // url += `${url}${encodeURIComponent(redirectURL)}`
-        console.log('url :', url);
-        // Use SafariView on iOS
-        // if (Platform.OS === 'ios') {
-        //   SafariViewManager.show({
-        //     url: url,
-        //     fromBottom: true,
-        //   });
-        // }
-        // // Or Linking.openURL on Android
-        // else {
-        //   Linking.openURL(url)
-        // }
-        let result = await WebBrowser.openBrowserAsync(url)
+        let result = await AuthSession.startAsync({ authUrl: url })
+        this.getTokenbyCode(result.params.code)
       };
       componentDidMount() {
         this.fadeIn()
-        WebBrowser.addEventListener('url', this.handleOpenURL)
       }
       fadeIn() {
         Animated.timing(
@@ -149,31 +162,6 @@ const logo = require('../images/logo.jpg')
             Alert.alert('Error when signing in: ', err.message)
             }
         })
-      }
-
-      
-      async signInwithFacebook() {
-        try {
-          const { type, token, expires, user } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
-            permissions: ['public_profile']
-          })
-          console.log('type: ', type)
-          if (type === 'success') {
-            // sign in with federated identity
-            Auth.federatedSignIn('facebook', { token, expires_at: expires}, user)
-              .then(credentials => {
-                console.log('get aws credentials', credentials);
-                return Auth.currentAuthenticatedUser()
-              })
-              .then(user => console.log('user :', user))
-              .catch(async (e) => {
-                console.log('e: ', e);
-              });
-          }
-        }
-        catch (FBError) {
-          console.log('FBError: ', FBError)
-        }
       }
 
     render() {
