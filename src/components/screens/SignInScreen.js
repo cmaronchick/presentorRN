@@ -84,17 +84,20 @@ const logo = require('../images/logo.jpg')
       
       async signInwithFacebook() {
         try {
-          const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+          const { type, token, expires, user } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
             permissions: ['public_profile']
           })
           console.log('type: ', type)
           if (type === 'success') {
             // sign in with federated identity
-            Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })
+            Auth.federatedSignIn('facebook', { token, expires_at: expires}, user)
               .then(credentials => {
                 console.log('get aws credentials', credentials);
-              }).catch(e => {
-                console.log(e);
+                return Auth.currentAuthenticatedUser()
+              })
+              .then(user => console.log('user :', user))
+              .catch(async (e) => {
+                console.log('e: ', e);
               });
           }
         }

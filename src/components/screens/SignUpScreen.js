@@ -88,11 +88,10 @@ import {
     
     async signUpwithFacebook() {
         try {
-            const { type, token, expires } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
+            const { type, token, expires, user } = await Facebook.logInWithReadPermissionsAsync('405055010060445', {
                 permissions: ['public_profile','email','user_friends'],
-                behavior: 'web'
             });
-            console.log('type: ', type)
+            console.log('user : ', user)
             if (type === 'success') {
             // sign in with federated identity
             Auth.federatedSignIn('facebook', { token, expires_at: expires}, { name: 'USER_NAME' })

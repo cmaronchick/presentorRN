@@ -1,7 +1,7 @@
 {
     "identityPoolName": "cognito3b65fd3e_identitypool_3b65fd3e",
     "allowUnauthenticatedIdentities": false,
-    "thirdPartyAuth": false,
+    "thirdPartyAuth": true,
     "lambdaLogPolicy": "cognito3b65fd3e_lambda_log_policy",
     "openIdLambdaRoleName": "cognito3b65fd3e_openid_lambda_role",
     "openIdRolePolicy": "cognito3b65fd3e_openid_pass_role_policy",
@@ -20,7 +20,7 @@
     "policyName": "cognito3b65fd3e-sns-policy",
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
-    "emailVerificationSubject": "Your verification code",
+    "emailVerificationSubject": "Presentor - Your e-mail verification code",
     "emailVerificationMessage": "Your verification code is {####}",
     "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
@@ -47,11 +47,16 @@
     "userpoolClientLogPolicy": "cognito3b65fd3e_userpoolclient_lambda_log_policy",
     "userpoolClientLambdaPolicy": "cognito3b65fd3e_userpoolclient_lambda_iam_policy",
     "userpoolClientSetAttributes": false,
-    "useDefault": "default",
+    "resourceName": "cognito3b65fd3e",
+    "authSelections": "identityPoolAndUserPool",
+    "useDefault": "manual",
     "unAuthRoleName": "presentor-20190204171901-unauthRole",
     "authRoleName": "presentor-20190204171901-authRole",
     "unAuthRoleArn": "arn:aws:iam::607960299938:role/presentor-20190204171901-unauthRole",
     "authRoleArn": "arn:aws:iam::607960299938:role/presentor-20190204171901-authRole",
-    "resourceName": "cognito3b65fd3e",
-    "authSelections": "identityPoolAndUserPool"
+    "authProviders": [
+        "graph.facebook.com"
+    ],
+    "facebookAppId": "405055010060445",
+    "selectedParties": "{\"graph.facebook.com\":\"405055010060445\"}"
 }
