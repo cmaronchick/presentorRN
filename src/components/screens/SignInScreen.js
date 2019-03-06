@@ -16,7 +16,9 @@ import {
     Keyboard,
     Alert,
     Animated,
-  } from 'react-native'
+    Linking,
+    Platform,
+    SafariView  } from 'react-native'
 import { Container, Item, Input, Icon, Button } from 'native-base';
 import styles from '../styles/signIn';
 const logo = require('../images/logo.jpg')
@@ -27,10 +29,71 @@ const logo = require('../images/logo.jpg')
           password: '',
           fadeIn: new Animated.Value(0),
           fadeOut: new Animated.Value(0),
-          isHidden: false
+          isHidden: false,
+          loginURL: 'https://presentor.auth.us-west-2.amazoncognito.com/login?redirect_uri=presentorRN://login&response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&identity_provider=Facebook&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile'
       }
+
+      handleOpenURL = async ({ url }) => {
+        console.log('url: ', url)
+        // Extract stringified user string out of the URL
+        const [, code] = url.match(/code=([^#]+)/);
+        if (code.indexOf("#") > -1) {
+          const code1 = code.split('#');
+          this.getTokenbyCode(code1);
+        } else {
+          console.log('code: ', code);
+          this.getTokenbyCode(code);
+        }
+      }
+
+      getTokenbyCode = code => {
+        const details = {
+          grant_type: 'authorization_code',
+          code,
+          client_id: '10eavoe3ufj2d70m5m3m2hl4pl',
+          redirect_uri: 'presentorRN://'
+        }
+        const formBody = Object.keys(details)
+          .map(
+            key => `${encodeURIComponent(key)}=${encodeURIComponent(details[key])}`
+          )
+          .join("&");
+
+        fetch(
+          'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/token',
+          {
+            method: "POST",
+            headers: {
+              'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: formBody
+          }
+        )
+          .then(res => {
+            console.log('res: ', res);
+          })
+          .catch(error => {
+            console.log('error: ', error);
+          });
+      }
+
+      // Open URL in a browser
+      openURL = (url) => {
+        // Use SafariView on iOS
+        if (Platform.OS === 'ios') {
+          SafariView.show({
+            url: url,
+            fromBottom: true,
+          });
+        }
+        // Or Linking.openURL on Android
+        else {
+          Linking.openURL(url)
+        }
+      };
       componentDidMount() {
         this.fadeIn()
+        Linking.addEventListener('url', this.handleOpenURL)
       }
       fadeIn() {
         Animated.timing(
@@ -43,6 +106,7 @@ const logo = require('../images/logo.jpg')
         ).start()
         this.setState({isHidden: true})
       }
+
       fadeOut() {
         Animated.timing(
         this.state.fadeOut,
@@ -124,7 +188,7 @@ const logo = require('../images/logo.jpg')
                     </View>
                     <Container style={styles.infoContainer}>
                         <View style={styles.container}>
-                          <Button primary onPress={() => this.signInwithFacebook()}
+                          <Button primary onPress={() => this.openURL(this.state.loginURL)}
                             style={styles.buttonStyle}>
                             <Text style={styles.buttonText}>Sign In with Facebook</Text>
                           </Button>
