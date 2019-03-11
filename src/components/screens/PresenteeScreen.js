@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import { 
     SafeAreaView,
     ScrollView,
-    View,
-    Text,
     StyleSheet,
     FlatList,
     Modal,
@@ -14,11 +12,23 @@ import {
 import DatePicker from 'react-native-datepicker'
 import uuid from 'uuid'
 import {
+    Button,
+    Card,
+    CardItem,
     Container,
     Content,
-    Item,
-    Input,
+    Header,
+    Body,
+    Left,
+    Right,
+    Title,
     Icon,
+    Input,
+    Item,
+    List,
+    ListItem,
+    Text,
+    View,
 } from 'native-base'
 import Auth from '@aws-amplify/auth'
 import apis from '../../apis/apis'
@@ -119,8 +129,12 @@ class PresenteeScreen extends Component {
         this.setState({presentee: tempPresentee})
     }
 
+    onChangeTextDate(key, value) {
+        this.setState({ [key]: value }) 
+    }
+
     async onChangeTextGift(value) {
-        this.setState({searchingGifts: true})
+        this.setState({searchingGifts: true, addingGiftName: value})
         await Auth.currentAuthenticatedUser()
         .then(async (user) => {
             await apis.giftSearch(user.signInUserSession.idToken.jwtToken,value)
@@ -137,7 +151,12 @@ class PresenteeScreen extends Component {
         await this.setState({
             presentee: tempPresentee
         })
-        console.log('this.state :', this.state);
+        if (arrayName === 'gifts') {
+            this.clearGift();
+        }
+        if (arrayName === 'keyDates') {
+            this.clearDate()
+        }
     }
     clearGift() {
         this.setState({
@@ -149,6 +168,14 @@ class PresenteeScreen extends Component {
             searchTerm: null,
             giftSearchResults: [],
             selectedSearchResult: null,
+        })
+    }
+    clearDate() {
+        this.setState({
+            addingDate: false,
+            addingDateUUID: null,
+            addingDateName: null,
+            addingDateDate: null,
         })
     }
     updatePresentee = async () => {
@@ -217,236 +244,269 @@ class PresenteeScreen extends Component {
         
         //let { presentee } = this.props
         return (
-            <SafeAreaView style={signInStyles.container}>
-                <ScrollView style={styles.presenteeContainer}>
-                    <View style={{flex: 1, flexDirection: 'row', justifyContent: "space-evenly"}}>
-                        <Text
-                            style={{fontWeight: '500', fontSize: 18, marginTop: 12 }}>{presentee.firstName} {presentee.lastName}</Text>
-                        <TouchableOpacity 
-                            style={signInStyles.buttonStyle}
-                            onPress={() => this.showModal()}>
-                            <Text style={signInStyles.buttonText}>Edit</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {presentee.keyDates ? (
-                        <View style={signInStyles.container}>
-                            <Text style={styles.sectionHeader}>Gift Occasions</Text>
-                            <FlatList
-                                data={presentee.keyDates.sort((a,b) => {
-                                    if (a.date > b.date) return 1;
-                                    return -1;
-                                })}
-                                keyExtractor={(item) => item.date}
-                                renderItem={({item, index}) => (    
-                                    <View style={styles.dateRow}>
-                                        <Text>{item.name}</Text>
-                                        <Text>
-                                            {new Date(item.date).getMonth() + 1}
-                                            /{new Date(item.date).getDate() + 1}
-                                            /{new Date(item.date).getFullYear()}
-                                        </Text>
-                                        <Icon
-                                        active
-                                        name="remove-circle"
-                                        style={[styles.iconStyle, { marginLeft: 0 }]} onPress={() => this.deleteAlert(index, item.name, 'keyDates')}
-                                        />
-                                    </View>
-                                )
-                            }
-                            />
-                        </View>
-                    ) :
-                        <TouchableOpacity onPress={() => {
-                            var uuidVal = uuid();
-                            this.setState({
-                                addingDateUUID: uuidVal,
-                                addingDate: true
-                            })
-                        }}
-                        style={signInStyles.buttonStyle}>
-                            <Text>Add a Gift Occasion for this Presentee</Text>
-                        </TouchableOpacity>
-                    }
-                    <View style={styles.container}>
-                        {this.state.addingDate ? (
-                            <View style={{width: 300, height: 100, flexDirection: 'column', justifyContent: 'space-between', backgroundColor: ''}}>
-
-                            <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
-                                <Input
-                                        style={[signInStyles.input, {flex: 1}]}
-                                        placeholder='Gift Occasion'
-                                        returnKeyType='done'
-                                        autoCapitalize='words'
-                                        autoCorrect={false}
-                                        secureTextEntry={false}
-                                        ref='FirstInput'
-                                        onChangeText={(val) => {
-                                            this.onChangeText('addingDateName', val)}
+            <Container>
+                    <Header>
+                        <Body>
+                            <Title>{presentee.firstName} {presentee.lastName}</Title>
+                        </Body>
+                        <Right>
+                            <Button 
+                                style={signInStyles.buttonStyle}
+                                onPress={() => this.showModal()}>
+                                <Text style={signInStyles.buttonText}>Edit</Text>
+                            </Button>
+                        </Right>
+                    </Header>
+                    <Content>
+                        {presentee.keyDates ? (
+                            <Card style={signInStyles.container}>
+                                <CardItem header>
+                                    <Text style={styles.sectionHeader}>Gift Occasions</Text>
+                                </CardItem>
+                                        
+                                        <FlatList
+                                            data={presentee.keyDates.sort((a,b) => {
+                                                if (a.date > b.date) return 1;
+                                                return -1;
+                                            })}
+                                            keyExtractor={(item) => item.date}
+                                            renderItem={({item, index}) => (    
+                                                <ListItem>
+                                                    <Left>
+                                                        <Text>{item.name}</Text>
+                                                    </Left>
+                                                    <Body>
+                                                        <Text>
+                                                            {new Date(item.date).getMonth() + 1}
+                                                            /{new Date(item.date).getDate() + 1}
+                                                            /{new Date(item.date).getFullYear()}
+                                                        </Text>
+                                                    </Body>
+                                                    <Right>
+                                                        <Icon
+                                                        active
+                                                        name="remove-circle"
+                                                        style={[styles.iconStyle, { marginLeft: 0 }]} onPress={() => this.deleteAlert(index, item.name, 'keyDates')}
+                                                        />
+                                                    </Right>
+                                                </ListItem>
+                                            )
                                         }
                                         />
-                            </Item>
-                            <Item>
-                                <DatePicker
-                                        date={this.state.addingDateDate}
-                                        mode="date"
-                                        placeholder="select date"
-                                        format="YYYY-MM-DD"
-                                        confirmBtnText="Confirm"
-                                        cancelBtnText="Cancel"
-                                        customStyles={{
-                                        dateIcon: {
-                                            position: 'absolute',
-                                            left: 0,
-                                            top: 4,
-                                            marginLeft: 0
-                                        },
-                                        dateInput: {
-                                            marginLeft: 36
-                                        }
-                                        // ... You can check the source to find the other keys.
-                                        }}
-                                        onDateChange={(date) => {
-                                            this.setState({
-                                                addingDateDate: date
-                                            })
-                                        }}
-                                    />
-                            </Item>
-                            <TouchableOpacity 
-                            style={signInStyles.buttonStyle}
-                            disabled={(!this.state.addingDateName || !this.state.addingDateDate)} 
-                             onPress={async () => {
-                                 await this.addDate()
-                                 await this.updatePresentee()
-                                } }>
-                                <Text>Save</Text>
-                            </TouchableOpacity>                            
-                            </View>
-                        ) : (
-                            <TouchableOpacity onPress={() => {
+                            </Card>
+                        ) :
+                            <Button onPress={() => {
                                 var uuidVal = uuid();
                                 this.setState({
                                     addingDateUUID: uuidVal,
                                     addingDate: true
                                 })
-                            }} style={signInStyles.buttonStyle}>
-                                <Text>Add Gift Occasions</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-
-                    {this.state.presentee.gifts ? (
-                        <View style={signInStyles.container}>
-                            <Text style={styles.sectionHeader}>Gifts</Text>
-                            <FlatList
-                                data={this.state.presentee.gifts}
-                                keyExtractor={({item, index}) => index}
-                                renderItem={({item, index}) => (    
-                                    <View style={styles.dateRow}>
-                                        <Text>{item.name}</Text>
-                                        <Icon
-                                        active
-                                        name="remove-circle"
-                                        style={[styles.iconStyle, { marginLeft: 0 }]} onPress={() => this.deleteAlert(index, item.name, 'keyDates')}
-                                        />
-                                    </View>
-                                )
-                            }
-                            />
-                        </View>
-                    ) : null
-                    }
-
-                    {!this.state.addingGift ? (
-                            <TouchableOpacity onPress={() => {
-                                var uuidVal = uuid();
-                                this.setState({
-                                    addingGiftUUID: uuidVal,
-                                    addingGift: true
-                                })
                             }}
                             style={signInStyles.buttonStyle}>
-                                <Text>Add a Gift for this Presentee</Text>
-                            </TouchableOpacity>
-                    ) : null }
-                    <View style={styles.container}>
-                        {this.state.addingGift ? (
-                            <View style={{flex: 1, flexDirection: 'column', justifyContent: 'space-between', width: 300}}>
+                                <Text>Add a Gift Occasion for this Presentee</Text>
+                            </Button>
+                        }
+                        <View style={styles.container}>
+                            {this.state.addingDate ? (
+                                <View style={{width: 300, height: 100, flexDirection: 'column', justifyContent: 'space-between', backgroundColor: ''}}>
 
-                            <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
-                                <Input
-                                        style={[signInStyles.input, {flex: 1}]}
-                                        placeholder='Gift'
-                                        returnKeyType='done'
-                                        autoCapitalize='words'
-                                        autoCorrect={false}
-                                        secureTextEntry={false}
-                                        ref='FirstInput'
-                                        onChangeText={(val) => {
-                                            this.onChangeTextGift(val)}
-                                        }
+                                <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
+                                    <Input
+                                            style={[signInStyles.input, {flex: 1}]}
+                                            placeholder='Gift Occasion'
+                                            returnKeyType='done'
+                                            autoCapitalize='words'
+                                            autoCorrect={false}
+                                            secureTextEntry={false}
+                                            ref='FirstInput'
+                                            onChangeText={(val) => {
+                                                this.onChangeTextDate('addingDateName', val)}
+                                            }
+                                            />
+                                </Item>
+                                <Item>
+                                    <DatePicker
+                                            date={this.state.addingDateDate}
+                                            mode="date"
+                                            placeholder="select date"
+                                            format="YYYY-MM-DD"
+                                            confirmBtnText="Confirm"
+                                            cancelBtnText="Cancel"
+                                            customStyles={{
+                                            dateIcon: {
+                                                position: 'absolute',
+                                                left: 0,
+                                                top: 4,
+                                                marginLeft: 0
+                                            },
+                                            dateInput: {
+                                                marginLeft: 36
+                                            }
+                                            // ... You can check the source to find the other keys.
+                                            }}
+                                            onDateChange={(date) => {
+                                                this.setState({
+                                                    addingDateDate: date
+                                                })
+                                            }}
                                         />
-                            </Item>
-                            {this.state.searchingGifts ? (
-                                <ActivityIndicator size="large" color="#fff" />
-                            ) : null }
-                            {this.state.giftSearchResults.length ? (
-                                <View style={styles.container}>
-                                        <FlatList
-                                            data={this.state.giftSearchResults}
-                                            keyExtractor={({item, index}) => index}
-                                            renderItem={({item, index}) => (
-                                                <View style={styles.dateRow}>
-                                                    <Item style={signInStyles.itemStyle}>    
-                                                        <TouchableOpacity onPress={() => {
-                                                            this.setState({selectedSearchResult: item})
-                                                        }
-                                                        }>
-                                                                <Text style={signInStyles.textStyle}>{item.name}</Text>
-                                                        </TouchableOpacity>
-                                                    </Item>
-                                                </View>
-                                            )
-                                        }
-                                        />
-                                    {/* <View style={{padding: 20,flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                                        <View style={signInStyles.container}> */}
-                                        <Container style={[signInStyles.infoContainer, { alignItems: 'flex-start', justifyContent: 'space-between'}]}>
-                                            <TouchableOpacity 
-                                            style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
-                                            disabled={!this.state.searchTerm}
-                                            onPress={async () => {
-                                                await this.addItem('gifts', this.state.selectedSearchResult ? this.state.selectedSearchResult : { name: this.state.addingGiftName, id: this.state.addingDateUUID })
-                                                await this.updatePresentee()
-                                                } }>
-                                                <Text style={signInStyles.buttonText}>Save</Text>
-                                            </TouchableOpacity> 
-                                        {/* </View>
-                                        <View style={signInStyles.container}> */}
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    this.clearGift()
-                                                }}
-                                                style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}>
-                                                <Text style={signInStyles.buttonText}>
-                                                    Cancel
-                                                </Text>
-                                            </TouchableOpacity>
-                                        {/* </View>
-                                    </View> */}
-                                        </Container>
+                                </Item>
+                                <Button 
+                                style={signInStyles.buttonStyle}
+                                disabled={(!this.state.addingDateName || !this.state.addingDateDate)} 
+                                onPress={async () => {
+                                    await this.addItem('keyDates', { name: this.state.addingDateName, date: this.state.addingDateDate, id: this.state.addingDateUUID })
+                                    await this.updatePresentee()
+                                    } }>
+                                    <Text>Save</Text>
+                                </Button>                            
                                 </View>
                             ) : (
-                                <View style={styles.container}>
-                                    <Text>No Search Results</Text>
-                                </View>
-                            ) }                          
+                                <Button onPress={() => {
+                                    var uuidVal = uuid();
+                                    this.setState({
+                                        addingDateUUID: uuidVal,
+                                        addingDate: true
+                                    })
+                                }} style={signInStyles.buttonStyle}>
+                                    <Text>Add Gift Occasions</Text>
+                                </Button>
+                            )}
+                        </View>
+
+                        {this.state.presentee.gifts ? (
+                            <View style={signInStyles.container}>
+                                <Text style={styles.sectionHeader}>Gifts</Text>
+                                <FlatList
+                                    data={this.state.presentee.gifts}
+                                    keyExtractor={({item, index}) => index}
+                                    renderItem={({item, index}) => (    
+                                        <ListItem>
+                                            <Body>
+                                                <Text>{item.name}</Text>
+                                            </Body>
+                                            <Right>
+                                                <Icon
+                                                active
+                                                name="remove-circle"
+                                                style={[styles.iconStyle, { marginLeft: 0 }]} onPress={() => this.deleteAlert(index, item.name, 'gifts')}
+                                                />
+                                            </Right>
+                                        </ListItem>
+                                    )
+                                }
+                                />
                             </View>
-                        ) : null}
-                    </View>
+                        ) : null
+                        }
+
+                        {!this.state.addingGift ? (
+                                <Button onPress={() => {
+                                    var uuidVal = uuid();
+                                    this.setState({
+                                        addingGiftUUID: uuidVal,
+                                        addingGift: true
+                                    })
+                                }}
+                                style={signInStyles.buttonStyle}>
+                                    <Text>Add a Gift for this Presentee</Text>
+                                </Button>
+                        ) : null }
+                        <View style={styles.container}>
+                            {this.state.addingGift ? (
+                                <View style={{flex: 1, flexDirection: 'column', justifyContent: 'space-between', width: 300}}>
+
+                                <Item rounded style={[signInStyles.itemStyle, {height: 30}]}>
+                                    <Input
+                                            style={[signInStyles.input, {flex: 1}]}
+                                            placeholder='Gift'
+                                            returnKeyType='done'
+                                            autoCapitalize='words'
+                                            autoCorrect={false}
+                                            secureTextEntry={false}
+                                            ref='FirstInput'
+                                            onChangeText={(val) => {
+                                                this.onChangeTextGift(val)}
+                                            }
+                                            />
+                                </Item>
+                                {this.state.searchingGifts ? (
+                                    <ActivityIndicator size="large" color="#fff" />
+                                ) : null }
+                                {this.state.giftSearchResults.length ? (
+                                    <View style={styles.container}>
+                                            <FlatList
+                                                data={this.state.giftSearchResults}
+                                                keyExtractor={({item, index}) => index}
+                                                renderItem={({item, index}) => (
+                                                    
+                                                    <Button onPress={() => {
+                                                        this.setState({selectedSearchResult: item})
+                                                    }
+                                                    } style={[signInStyles.itemStyle, (this.state.selectedSearchResult === item) ? {backgroundColor: 'rgba(80,94,104,0)'} : {}]}>
+                                                        <Text style={signInStyles.textStyle}>{item.name}</Text>
+                                                    </Button>
+                                                )
+                                            }
+                                            />
+                                        {/* <View style={{padding: 20,flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                                            <View style={signInStyles.container}> */}
+                                            <Container style={[signInStyles.infoContainer, { alignItems: 'flex-start', justifyContent: 'space-between'}]}>
+                                                <Button 
+                                                style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
+                                                disabled={!this.state.addingGiftName}
+                                                onPress={async () => {
+                                                    await this.addItem('gifts', this.state.selectedSearchResult ? this.state.selectedSearchResult : { name: this.state.addingGiftName, id: this.state.addingDateUUID })
+                                                    await this.updatePresentee()
+                                                    } }>
+                                                    <Text style={signInStyles.buttonText}>Save</Text>
+                                                </Button> 
+                                            {/* </View>
+                                            <View style={signInStyles.container}> */}
+                                                <Button
+                                                    onPress={() => {
+                                                        this.clearGift()
+                                                    }}
+                                                    style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}>
+                                                    <Text style={signInStyles.buttonText}>
+                                                        Cancel
+                                                    </Text>
+                                                </Button>
+                                            {/* </View>
+                                        </View> */}
+                                            </Container>
+                                    </View>
+                                ) : (
+                                    <View style={styles.container}>
+                                        <Text>No Search Results</Text>
+                                        <Button 
+                                        style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}
+                                        disabled={!this.state.addingGiftName}
+                                        onPress={async () => {
+                                            await this.addItem('gifts', { name: this.state.addingGiftName, id: this.state.addingDateUUID })
+                                            await this.updatePresentee()
+                                            } }>
+                                            <Text style={signInStyles.buttonText}>Save</Text>
+                                        </Button> 
+                                    {/* </View>
+                                    <View style={signInStyles.container}> */}
+                                        <Button
+                                            onPress={() => {
+                                                this.clearGift()
+                                            }}
+                                            style={[signInStyles.buttonStyle, styles.presenteeButtonStyle]}>
+                                            <Text style={signInStyles.buttonText}>
+                                                Cancel
+                                            </Text>
+                                        </Button>
+                                    </View>
+                                ) }                          
+                                </View>
+                            ) : null}
+                        </View>
+                    </Content>
                     <PresenteeModal modalVisible={this.state.modalVisible} presentee={this.state.presentee} onSave={() => this.updatePresentee()} onClose={() => this.hideModal()} />
-                </ScrollView>
-            </SafeAreaView>
+            </Container>
         );
     }
 }

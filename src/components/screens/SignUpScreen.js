@@ -8,7 +8,6 @@ import {
   CognitoRefreshToken, 
   CognitoUserSession, 
   CognitoUserPool } from 'amazon-cognito-identity-js';
-import jwt from 'jwt-decode'
 const userPool = new CognitoUserPool({
   UserPoolId: config.aws_user_pools_id,
   ClientId: config.aws_user_pools_web_client_id
