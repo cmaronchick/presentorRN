@@ -145,7 +145,11 @@ import apis from '../../apis/apis';
               cognitoUser.getSession((err, session) => { // You must run this to verify that session (internally)
                 if (session.isValid()) {
                   console.log('session is valid');
-                  this.setState({user: cognitoUser})
+                  
+                  let upUser = Auth.createCognitoUser(userData)
+                  upUser.setSignInUserSession(session)
+
+                  // Send User back to the AuthLoading Screen to check for authentication
                   this.props.navigation.navigate('AuthLoading')
                 } else {
                   console.log('session is not valid: ', session);
