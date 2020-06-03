@@ -1,5 +1,6 @@
 // AWS Amplify
 import Auth from '@aws-amplify/auth'
+import Amplify, { Hub } from '@aws-amplify/core'
 import config from '../../aws-exports'
 import { 
   CognitoUser, 
@@ -12,6 +13,17 @@ const userPool = new CognitoUserPool({
   UserPoolId: config.aws_user_pools_id,
   ClientId: config.aws_user_pools_web_client_id
 });
+
+// your Cognito Hosted UI configuration
+const oauth = {
+  domain: 'presentor.auth.us-west-2.amazoncognito.com',
+  scope: ['phone', 'email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+  redirectSignIn: `${encodeURIComponent(AuthSession.getRedirectUrl())}`,
+  redirectSignOut: `${encodeURIComponent(AuthSession.getRedirectUrl())}`,
+  responseType: 'code' // or token
+};
+
+
 
 import { AuthSession } from 'expo'
 import React from 'react'
@@ -33,20 +45,29 @@ import {
     
     } from 'react-native'
 //import SafariView from 'react-native-safari-view'
-import { Container, Item, Input, Icon, Button } from 'native-base';
+import { 
+  Container,
+  Item,
+  Input,
+  Icon,
+  Button } from 'native-base';
 import styles from '../styles/signIn';
 
 const logo = require('../images/logo.jpg')
 
+
   export default class SignInScreen extends React.Component {
-      state = {
-          username: '',
-          password: '',
-          fadeIn: new Animated.Value(0),
-          fadeOut: new Animated.Value(0),
-          isHidden: false,
-          loginURL: `https://presentor.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&redirect_uri=${encodeURIComponent(AuthSession.getRedirectUrl())}&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile`
+    constructor(props) {
+      super(props)
+      this.state = {
+        username: '',
+        password: '',
+        fadeIn: new Animated.Value(0),
+        fadeOut: new Animated.Value(0),
+        isHidden: false,
+        signInURL: `https://presentor.auth.us-west-2.amazoncognito.com/authorize?response_type=code&client_id=10eavoe3ufj2d70m5m3m2hl4pl&redirect_uri=${encodeURIComponent(AuthSession.getRedirectUrl())}&scope=aws.cognito.signin.user.admin%20email%20openid%20phone%20profile`
       }
+    }
 
       getTokenbyCode = async (code) => {
         const details = {
@@ -80,21 +101,16 @@ const logo = require('../images/logo.jpg')
               let userSession = new CognitoUserSession({ IdToken, AccessToken, RefreshToken });
               console.log('userSession: ', userSession);
               const userData = {
-                Username: userSession.idToken.payload.email,
+                Username: userSession.idToken.payload['cognito:username'],
                 Pool: userPool
               };
               console.log('userData: ', userData);
-              cognitoUser = new CognitoUser(userData);
+              const cognitoUser = new CognitoUser(userData);
               cognitoUser.setSignInUserSession(userSession);
-              cognitoUser.getSession((err, session) => { // You must run this to verify that session (internally)
-                if (session.isValid()) {
-                  console.log('session is valid');
-                  this.setState({user: cognitoUser})
-                  this.props.navigation.navigate('AuthLoading')
-                } else {
-                  console.log('session is not valid: ', session);
-                }
-              })
+              const authUser = Auth.createCognitoUser(cognitoUser.getUsername())
+              authUser.setSignInUserSession(userSession)
+              
+              this.props.navigation.navigate('AuthLoading')
             }
             catch (FBSignInError) {
               console.log('FBSignInError: ', FBSignInError)
@@ -226,13 +242,17 @@ const logo = require('../images/logo.jpg')
                             onChangeText={value => this.onChangeText('password', value)}
                             />
                         </Item>
-                        <TouchableOpacity
+                        <Button
                             onPress={() => this.signIn()}
                             style={styles.buttonStyle}>
                             <Text style={styles.buttonText}>
                             Sign In
                             </Text>
-                        </TouchableOpacity>
+                        </Button>
+                        
+                        <Button onPress={() => this.openURL(this.state.signInURL)} primary style={[styles.buttonStyle, {backgroundColor: '#3b5998'}]} containerViewStyle={{width: '100%',marginLeft: 0}}>
+                            <Text style={styles.buttonText}>Sign In with Facebook</Text>
+                        </Button>
                         </View>
                     </Container>
                     </View>
