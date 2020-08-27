@@ -1,10 +1,5 @@
 {
     "projectName": "presentorRN",
-    "projectPath": "/Users/chrisaronchick/GitHub/presentorRN",
-    "defaultEditor": "code",
-    "frontendHandler": {
-        "javascript": "/Users/chrisaronchick/.nvm/versions/node/v8.3.0/lib/node_modules/@aws-amplify/cli/node_modules/amplify-frontend-javascript"
-    },
     "javascript": {
         "framework": "react-native",
         "config": {
@@ -14,7 +9,9 @@
             "StartCommand": "npm run-script start"
         }
     },
-    "providers": {
-        "awscloudformation": "/Users/chrisaronchick/.nvm/versions/node/v8.3.0/lib/node_modules/@aws-amplify/cli/node_modules/amplify-provider-awscloudformation"
-    }
+    "providers": [
+        "awscloudformation"
+    ],
+    "frontend": "javascript",
+    "version": "2.0"
 }
