@@ -10,7 +10,6 @@ import {
     StatusBar,
     KeyboardAvoidingView,
     Keyboard,
-    Alert,
     Modal,
     FlatList,
     Animated,

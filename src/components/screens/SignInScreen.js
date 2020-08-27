@@ -23,9 +23,7 @@ const oauth = {
   responseType: 'code' // or token
 };
 
-
-
-import { AuthSession } from 'expo'
+import * as AuthSession from 'expo-auth-session';
 import React from 'react'
 import {
     StyleSheet,
@@ -38,7 +36,6 @@ import {
     StatusBar,
     KeyboardAvoidingView,
     Keyboard,
-    Alert,
     Animated,
     Linking,
     Platform,
@@ -168,13 +165,13 @@ const logo = require('../images/logo.jpg')
         .catch(err => {
             if (! err.message) {
             console.log('Error when signing in: ', err)
-            Alert.alert('Error when signing in: ', err)
+            // Alert.alert('Error when signing in: ', err)
             } else {
                 if (err.code === "UserNotConfirmedException") {
                     this.props.navigation.navigate('ConfirmUser');
                 }
             console.log('Error when signing in: ', err, '; ', err.message)
-            Alert.alert('Error when signing in: ', err.message)
+            // Alert.alert('Error when signing in: ', err.message)
             }
         })
       }

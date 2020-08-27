@@ -6,8 +6,8 @@ import {
     StyleSheet,
     View,
     Text,
-    ActivityIndicator,
     AsyncStorage } from 'react-native';
+import { Spinner } from 'native-base'
 
 export default class AuthLoadingScreen extends React.Component {
     state = {
@@ -36,7 +36,7 @@ export default class AuthLoadingScreen extends React.Component {
     render() {
       return (
         <View style={styles.container}>
-          <ActivityIndicator size="large" color="#fff" />
+          <Spinner size="large" color="#fff" />
         </View>
       )
     }

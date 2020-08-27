@@ -6,8 +6,6 @@ import {
     FlatList,
     Modal,
     TouchableOpacity,
-    Alert,
-    ActivityIndicator,
 } from "react-native";
 import DatePicker from 'react-native-datepicker'
 import uuid from 'uuid'
@@ -25,8 +23,6 @@ import {
     Icon,
     Input,
     Item,
-    List,
-    ListItem,
     Text,
     View,
 } from 'native-base'
@@ -209,13 +205,13 @@ class PresenteeScreen extends Component {
         var tempArray = this.state.presentee[arrayName];
         console.log('tempArray1 :', tempArray);
         if (!tempArray) {
-            await Alert.alert(
-                'Sorry, there was an error with ' + arrayName,
-                [
-                    {text: 'OK'}
-                ],
-                {cancelable: false}
-            )
+            // await Alert.alert(
+            //     'Sorry, there was an error with ' + arrayName,
+            //     [
+            //         {text: 'OK'}
+            //     ],
+            //     {cancelable: false}
+            // )
         }
         tempArray.splice(index, 1);
         tempPresentee[arrayName] = tempArray
@@ -227,16 +223,16 @@ class PresenteeScreen extends Component {
     // Sign out from the app
     deleteAlert = async (index, itemName, arrayName) => {
         console.log('this.state.presentee[arrayName] :', this.state.presentee[arrayName]);
-        await Alert.alert(
-        'Delete ' + itemName + '',
-        'Are you sure you want to delete ' + itemName + '?',
-        [
-            {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
-            // Calling signOut
-            {text: 'OK', onPress: () => this.confirmDelete(index, arrayName)}, 
-        ],
-        { cancelable: false }
-        )
+        // await Alert.alert(
+        // 'Delete ' + itemName + '',
+        // 'Are you sure you want to delete ' + itemName + '?',
+        // [
+        //     {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
+        //     // Calling signOut
+        //     {text: 'OK', onPress: () => this.confirmDelete(index, arrayName)}, 
+        // ],
+        // { cancelable: false }
+        // )
     }
     render() {
         const { navigation } = this.props;
@@ -271,7 +267,7 @@ class PresenteeScreen extends Component {
                                             })}
                                             keyExtractor={(item) => item.date}
                                             renderItem={({item, index}) => (    
-                                                <ListItem>
+                                                <Item>
                                                     <Left>
                                                         <Text>{item.name}</Text>
                                                     </Left>
@@ -289,7 +285,7 @@ class PresenteeScreen extends Component {
                                                         style={[styles.iconStyle, { marginLeft: 0 }]} onPress={() => this.deleteAlert(index, item.name, 'keyDates')}
                                                         />
                                                     </Right>
-                                                </ListItem>
+                                                </Item>
                                             )
                                         }
                                         />
@@ -431,7 +427,7 @@ class PresenteeScreen extends Component {
                                             />
                                 </Item>
                                 {this.state.searchingGifts ? (
-                                    <ActivityIndicator size="large" color="#fff" />
+                                    <Spinner size="large" color="#fff" />
                                 ) : null }
                                 {this.state.giftSearchResults.length ? (
                                     <View style={styles.container}>

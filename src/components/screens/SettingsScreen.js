@@ -13,7 +13,6 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   View,
-  Alert,
 } from 'react-native'
 import {
     Container,
@@ -34,16 +33,16 @@ export default class SettingsScreen extends React.Component {
     }
     // Sign out from the app
     signOutAlert = async () => {
-        await Alert.alert(
-        'Sign Out',
-        'Are you sure you want to sign out from the app?',
-        [
-            {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
-            // Calling signOut
-            {text: 'OK', onPress: () => this.signOut()}, 
-        ],
-        { cancelable: false }
-        )
+        // await Alert.alert(
+        // 'Sign Out',
+        // 'Are you sure you want to sign out from the app?',
+        // [
+        //     {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
+        //     // Calling signOut
+        //     {text: 'OK', onPress: () => this.signOut()}, 
+        // ],
+        // { cancelable: false }
+        // )
     }
     // Confirm sign out
     signOut = async () => {

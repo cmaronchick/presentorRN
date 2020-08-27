@@ -10,11 +10,9 @@ import {
     StatusBar,
     KeyboardAvoidingView,
     Keyboard,
-    Alert,
     Modal,
     FlatList,
     Animated,
-    ActivityIndicator,
   } from 'react-native'
   import {
       Container,
@@ -22,6 +20,7 @@ import {
       Item,
       Input,
       Icon,
+      Spinner
   } from 'native-base'
 
   import Auth from '@aws-amplify/auth'
@@ -132,7 +131,7 @@ export default class HomeScreen extends React.Component {
             )
             : this.state.gettingPresentorInfo ? 
               <View style={styles.container}>
-                <ActivityIndicator size="large" color="#fff" />
+                <Spinner size="large" color="#fff" />
               </View>
               : null
           }

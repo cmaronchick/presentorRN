@@ -13,7 +13,6 @@ import {
     StatusBar,
     KeyboardAvoidingView,
     Keyboard,
-    Alert,
     Modal,
     FlatList,
     Animated,
@@ -65,10 +64,10 @@ import {
             .catch(err => {
             if (! err.message) {
                 console.log('Error when entering confirmation code: ', err)
-                Alert.alert('Error when entering confirmation code: ', err)
+                // Alert.alert('Error when entering confirmation code: ', err)
             } else {
                 console.log('Error when entering confirmation code: ', err.message)
-                Alert.alert('Error when entering confirmation code: ', err.message)
+                // Alert.alert('Error when entering confirmation code: ', err.message)
             }
         })
     }
@@ -81,10 +80,10 @@ import {
         .catch(err => {
         if (! err.message) {
             console.log('Error requesting new confirmation code: ', err)
-            Alert.alert('Error requesting new confirmation code: ', err)
+            // Alert.alert('Error requesting new confirmation code: ', err)
         } else {
             console.log('Error requesting new confirmation code: ', err.message)
-            Alert.alert('Error requesting new confirmation code: ', err.message)
+            // Alert.alert('Error requesting new confirmation code: ', err.message)
         }
         })
     }

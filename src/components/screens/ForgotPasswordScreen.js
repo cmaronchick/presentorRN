@@ -12,7 +12,6 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     View,
-    Alert,
     Animated
   } from 'react-native'
   import {
@@ -45,10 +44,10 @@ import {
         .catch(err => {
         if (! err.message) {
             console.log('Error while setting up the new password: ', err)
-            Alert.alert('Error while setting up the new password: ', err)
+            // Alert.alert('Error while setting up the new password: ', err)
         } else {
             console.log('Error while setting up the new password: ', err.message)
-            Alert.alert('Error while setting up the new password: ', err.message)
+            // Alert.alert('Error while setting up the new password: ', err.message)
         }
         })
     }
@@ -64,10 +63,10 @@ import {
         .catch(err => {
         if (! err.message) {
             console.log('Error while confirming the new password: ', err)
-            Alert.alert('Error while confirming the new password: ', err)
+            // Alert.alert('Error while confirming the new password: ', err)
         } else {
             console.log('Error while confirming the new password: ', err.message)
-            Alert.alert('Error while confirming the new password: ', err.message)
+            // Alert.alert('Error while confirming the new password: ', err.message)
         }
         })
     }

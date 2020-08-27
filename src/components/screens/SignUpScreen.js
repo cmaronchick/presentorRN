@@ -13,7 +13,7 @@ const userPool = new CognitoUserPool({
   ClientId: config.aws_user_pools_web_client_id
 });
 
-import { AuthSession } from 'expo'
+import * as AuthSession from 'expo-auth-session';
 import React from 'react'
 import {
     TouchableOpacity,
@@ -26,7 +26,6 @@ import {
     StatusBar,
     KeyboardAvoidingView,
     Keyboard,
-    Alert,
     Modal,
     FlatList,
     Animated,
@@ -92,10 +91,10 @@ import apis from '../../apis/apis';
             .catch(err => {
             if (! err.message) {
                 console.log('Error when signing up: ', err)
-                Alert.alert('Error when signing up: ', err)
+                // Alert.alert('Error when signing up: ', err)
             } else {
                 console.log('Error when signing up: ', err, '; ', err.message)
-                Alert.alert('Error when signing up: ', err.message)
+                // Alert.alert('Error when signing up: ', err.message)
             }
         })
     }

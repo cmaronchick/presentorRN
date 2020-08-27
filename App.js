@@ -7,13 +7,11 @@ Amplify.configure(config)
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Icon } from 'native-base';
+import { NavigationContainer } from '@react-navigation/native'
 
-import { 
-  createSwitchNavigator, 
-  createStackNavigator,
-  createBottomTabNavigator,
-  createDrawerNavigator,
-  createMaterialTopTabNavigator } from 'react-navigation'
+import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AuthLoadingScreen from './src/components/screens/AuthLoadingScreen'
 import WelcomeScreen from './src/components/screens/WelcomeScreen'
 
@@ -30,39 +28,31 @@ import SettingsScreen from './src/components/screens/SettingsScreen';
 import PresenteeScreen from './src/components/screens/PresenteeScreen';
 
 // Auth Stack
-const AuthStackNavigator = createStackNavigator({
-  Welcome: {
-    screen: WelcomeScreen,
-    navigationOptions: () => ({
-      title: `Welcome to this App`,  // for the header screen
-      headerBackTitle: 'Back'
-    }),
-  },
-  SignUp: {
-    screen: SignUpScreen,
-    navigationOptions: () => ({
-      title: 'Create New Account',
-    }),
-  },
-  ConfirmUser: {
-    screen: ConfirmUserScreen,
-    navigationOptions: () => ({
-      title: 'Enter Confirmation Code',
-    }),
-  },
-  SignIn: {
-    screen: SignInScreen,
-    navigationOptions: () => ({
-      title: `Log in to your account`,
-    }),
-  },
-  ForgotPassword: {
-    screen: ForgotPasswordScreen,
-    navigationOptions: () => ({
-      title: `Create a new password`,
-    }),
-  },
-});
+const AuthStack = createStackNavigator()
+const AuthStackNavigator = () => {
+  return (
+    <AuthStack.Navigator>
+      <AuthStack.Screen name="Welcome" component={WelcomeScreen}
+        options={() => ({
+          title: `Welcome to this App`,  // for the header screen
+          headerBackTitle: 'Back'
+        })} />
+      <AuthStack.Screen name="SignUp" component={SignUpScreen} options={() => ({
+          title: 'Create New Account',
+        })} />
+      <AuthStack.Screen name="ConfirmUser" component={ConfirmUserScreen} options={() => ({
+          title: 'Enter Confirmation Code',
+        }) } />
+      <AuthStack.Screen name="SignIn" component={SignInScreen} options={() => ({
+          title: `Log in to your account`,
+        })} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen}
+        options={() => ({
+          title: `Create a new password`,
+        })} />
+  </AuthStack.Navigator>
+  )
+};
 
 // Bottom Tabs
 const configuration = {
@@ -124,8 +114,16 @@ const options = {
     showIcon: true,
   }
 }
+const AppTab = createBottomTabNavigator();
+const AppTabNavigator = () => {
+  //(configuration, options)
+  return (
+    <AppTab.Navigator>
 
-const AppTabNavigator = createMaterialTopTabNavigator(configuration, options)
+    </AppTab.Navigator>
+
+  )
+}
 
 // Making the common header title dynamic in AppTabNavigator
 AppTabNavigator.navigationOptions = ({ navigation }) => {
@@ -135,37 +133,48 @@ AppTabNavigator.navigationOptions = ({ navigation }) => {
     headerTitle,
   }
 }
+const AppStack = createStackNavigator()
+const AppStackNavigator = () => {
 
-const AppStackNavigator = createStackNavigator({
-  AppStackNavigator: {
-    screen: AppTabNavigator,
-    navigationOptions: ({navigation}) => ({
-      headerLeft: (
-        <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
-          <View style={{paddingHorizontal: 10}}>
-            <Icon name='md-menu' size={24} />
-          </View>
-        </TouchableOpacity>
-      )
-    })
-  },
-  Presentee: PresenteeScreen
-})
+  return (
+    <AppStack.Navigator>
+      <AppStack.Screen name="Tabs" component={AppTabNavigator} options={({navigation}) => ({
+          headerLeft: (
+            <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+              <View style={{paddingHorizontal: 10}}>
+                <Icon name='md-menu' size={24} />
+              </View>
+            </TouchableOpacity>
+          )
+        })
+      } />
+      <AppStack.Screen name="Presentee" component={PresenteeScreen} />
+    </AppStack.Navigator>
+)
+}
 
 // App Stack for the Drawer
-const AppDrawerNavigator = createDrawerNavigator({
-  Tabs: AppStackNavigator,
-  Home: HomeScreen,
-  Profile: ProfileScreen,
-  Settings: SettingsScreen
-})
+const AppDrawer = createDrawerNavigator()
+const AppDrawerNavigator = () => {
+  return (
+    <AppDrawer.Navigator>
+      <AppDrawer.Screen name="AppStack  " component={AppStackNavigator} />
+      <AppDrawer.Screen name="Home" component={HomeScreen} />
+      <AppDrawer.Screen name="Profile" component={ProfileScreen} />
+      <AppDrawer.Screen name="Settings" component={SettingsScreen} />
+    </AppDrawer.Navigator>
+  )
+}
 
-export default createSwitchNavigator({
-  // screen: name
-  AuthLoading: AuthLoadingScreen,
-  Auth: AuthStackNavigator,
-  App: AppDrawerNavigator
-})
+export default App = () => {
+  return (
+    <NavigationContainer>
+      <AuthLoadingScreen />
+      <AuthStackNavigator />
+      <AppDrawerNavigator />
+    </NavigationContainer>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
