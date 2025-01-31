@@ -29,7 +29,7 @@ import PresenteeScreen from './src/components/screens/PresenteeScreen';
 
 // Auth Stack
 const AuthStack = createStackNavigator()
-const AuthStackNavigator = () => {
+const AuthStackNavigator = (props) => {
   return (
     <AuthStack.Navigator>
       <AuthStack.Screen name="Welcome" component={WelcomeScreen}
@@ -37,15 +37,17 @@ const AuthStackNavigator = () => {
           title: `Welcome to this App`,  // for the header screen
           headerBackTitle: 'Back'
         })} />
-      <AuthStack.Screen name="SignUp" component={SignUpScreen} options={() => ({
+      <AuthStack.Screen handleUserSignUp={props.handleUserLogin} name="SignUp" component={SignUpScreen} options={() => ({
           title: 'Create New Account',
         })} />
       <AuthStack.Screen name="ConfirmUser" component={ConfirmUserScreen} options={() => ({
           title: 'Enter Confirmation Code',
         }) } />
-      <AuthStack.Screen name="SignIn" component={SignInScreen} options={() => ({
+      <AuthStack.Screen name="SignIn" options={() => ({
           title: `Log in to your account`,
-        })} />
+        })}>
+          {signinprops => <SignInScreen handleUserSignIn={props.handleUserLogin} /> }
+      </AuthStack.Screen>
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen}
         options={() => ({
           title: `Create a new password`,
@@ -115,11 +117,35 @@ const options = {
   }
 }
 const AppTab = createBottomTabNavigator();
-const AppTabNavigator = () => {
+const AppTabNavigator = (props) => {
   //(configuration, options)
   return (
     <AppTab.Navigator>
+      <AppTab.Screen name="Home" component={HomeScreen} options={() => ({
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ tintColor }) => (
+            <Icon name="ios-home" style={{fontSize: 26, color: tintColor}} />
+          )
+          })
+      } />
+      <AppTab.Screen name="Profile" component={ProfileScreen} options={() => ({
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({tintColor}) => (
+            <Icon name="ios-person" style={{fontSize: 26, color: tintColor}} />
+          )
+          })
+      } />
+      <AppTab.Screen name="Settings" options={() => ({
+          tabBarLabel: 'Settings',
+          tabBarIcon: ({ tintColor }) => (
+            <Icon name="ios-settings" style={{fontSize: 26, color: tintColor}} />
+          )
+          })
+        }>
+          {settingsProps => <SettingsScreen handleSignOut={props.handleSignOut} />}
+      </AppTab.Screen>
 
+      
     </AppTab.Navigator>
 
   )
@@ -133,48 +159,93 @@ AppTabNavigator.navigationOptions = ({ navigation }) => {
     headerTitle,
   }
 }
+// options={({navigation}) => ({
+//   headerLeft: (
+//     <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+//       <View style={{paddingHorizontal: 10}}>
+//         <Icon name='md-menu' size={24} />
+//       </View>
+//     </TouchableOpacity>
+//   )
+// })
+// }
 const AppStack = createStackNavigator()
-const AppStackNavigator = () => {
-
+const AppStackNavigator = (props) => {
   return (
     <AppStack.Navigator>
-      <AppStack.Screen name="Tabs" component={AppTabNavigator} options={({navigation}) => ({
-          headerLeft: (
-            <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
-              <View style={{paddingHorizontal: 10}}>
-                <Icon name='md-menu' size={24} />
-              </View>
-            </TouchableOpacity>
-          )
-        })
-      } />
+      <AppStack.Screen name="Tabs" options={{
+        
+      }}>
+        {apptabprops=> <AppTabNavigator handleSignOut={props.handleSignOut} />}
+      </AppStack.Screen>
       <AppStack.Screen name="Presentee" component={PresenteeScreen} />
     </AppStack.Navigator>
-)
+  )
 }
 
 // App Stack for the Drawer
 const AppDrawer = createDrawerNavigator()
-const AppDrawerNavigator = () => {
+const AppDrawerNavigator = (props) => {
   return (
     <AppDrawer.Navigator>
-      <AppDrawer.Screen name="AppStack  " component={AppStackNavigator} />
+      <AppDrawer.Screen name="App">
+        {appstackprops => <AppStackNavigator handleSignOut={props.handleSignOut} />}
+      </AppDrawer.Screen>
       <AppDrawer.Screen name="Home" component={HomeScreen} />
       <AppDrawer.Screen name="Profile" component={ProfileScreen} />
-      <AppDrawer.Screen name="Settings" component={SettingsScreen} />
+      <AppDrawer.Screen name="Settings">
+       {
+        settingsProps => {
+          console.log('settings props in nav:', props, settingsProps)
+          return (<SettingsScreen handleSignOut={props.handleSignOut} />)
+        }
+      }
+      </AppDrawer.Screen>
     </AppDrawer.Navigator>
   )
 }
 
-export default App = () => {
-  return (
-    <NavigationContainer>
-      <AuthLoadingScreen />
-      <AuthStackNavigator />
-      <AppDrawerNavigator />
-    </NavigationContainer>
-  )
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      user: null
+    }
+  }
+  setUser = (user) => {
+    console.log('user:', user)
+    this.setState({
+      user
+    })
+  }
+  unsetUser = () => {
+    this.setState({
+      user: null
+    })
+  }
+  async componentDidMount() {
+      try {
+          let user = await Auth.currentAuthenticatedUser()
+          this.setUser(user)
+      } catch(err) {
+          console.log(err)
+      }
+      // this.props.navigation.navigate(this.state.userToken ? 'App' : 'Auth')
+  }
+  render() {
+    return (
+      <NavigationContainer>
+        {/* <AuthLoadingScreen /> */}
+        {this.state.user === null ? (
+          <AuthStackNavigator handleUserLogin={this.setUser} />
+        ) : (
+          <AppDrawerNavigator handleSignOut={this.unsetUser} />
+        )}
+      </NavigationContainer>
+    )
+  }
 }
+export default App
 
 const styles = StyleSheet.create({
   container: {

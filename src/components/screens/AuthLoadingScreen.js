@@ -18,18 +18,12 @@ export default class AuthLoadingScreen extends React.Component {
     }
 
     loadApp = async() => {
-        await Auth.currentAuthenticatedUser()
-        .then(user => {
+        try {
+            let user = await Auth.currentAuthenticatedUser()
             this.setState({userToken:     user.signInUserSession.accessToken.jwtToken})
-        })
-        .catch(async (err) => {
+        } catch(err) {
             console.log(err)
-            await Auth.currentUserInfo()
-            .then(userInfo => {
-                console.log('userInfo: ', userInfo)
-            })
-            .catch(userInfoError => console.log('userInfoError: ', userInfoError))
-        })
+        }
         this.props.navigation.navigate(this.state.userToken ? 'App' : 'Auth')
     }
 

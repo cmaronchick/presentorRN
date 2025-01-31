@@ -78,44 +78,37 @@ const logo = require('../images/logo.jpg')
             key => `${encodeURIComponent(key)}=${encodeURIComponent(details[key])}`
           )
           .join("&");
-
-        await fetch(
-          'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/token',
-          {
-            method: "POST",
-            headers: {
-              'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            },
-            body: formBody
-          }
-        )
-          .then(async (res) => {
+        try {
+         let res = await fetch(
+            'https://presentor.auth.us-west-2.amazoncognito.com/oauth2/token',
+            {
+              method: "POST",
+              headers: {
+                'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              },
+              body: formBody
+            }
+          )
             let tokenRequestJson = await res.json();
             const IdToken = new CognitoIdToken({ IdToken: tokenRequestJson.id_token });
             const AccessToken = new CognitoAccessToken({ AccessToken: tokenRequestJson.access_token });
             const RefreshToken = new CognitoRefreshToken({ RefreshToken: tokenRequestJson.refresh_token })
-            try {
-              let userSession = new CognitoUserSession({ IdToken, AccessToken, RefreshToken });
-              console.log('userSession: ', userSession);
-              const userData = {
-                Username: userSession.idToken.payload['cognito:username'],
-                Pool: userPool
-              };
-              console.log('userData: ', userData);
-              const cognitoUser = new CognitoUser(userData);
-              cognitoUser.setSignInUserSession(userSession);
-              const authUser = Auth.createCognitoUser(cognitoUser.getUsername())
-              authUser.setSignInUserSession(userSession)
-              
-              this.props.navigation.navigate('AuthLoading')
-            }
-            catch (FBSignInError) {
-              console.log('FBSignInError: ', FBSignInError)
-            }
-          })
-          .catch(error => {
+            let userSession = new CognitoUserSession({ IdToken, AccessToken, RefreshToken });
+            console.log('userSession: ', userSession);
+            const userData = {
+              Username: userSession.idToken.payload['cognito:username'],
+              Pool: userPool
+            };
+            console.log('userData: ', userData);
+            const cognitoUser = new CognitoUser(userData);
+            cognitoUser.setSignInUserSession(userSession);
+            const authUser = Auth.createCognitoUser(cognitoUser.getUsername())
+            authUser.setSignInUserSession(userSession)
+            this.props.handleUserSignIn(authUser)
+            
+          } catch(error) {
             console.log('error: ', error);
-          });
+          }
       }
 
       // Open URL in a browser
@@ -156,13 +149,12 @@ const logo = require('../images/logo.jpg')
       async signIn () {
         console.log('sign in started')
         const { username, password } = this.state
-        await Auth.signIn(username, password)
-        .then(user => {
-            console.log('user: ', user)
-            this.setState({ user })
-            this.props.navigation.navigate('AuthLoading')
-        })
-        .catch(err => {
+        try {
+        let user = await Auth.signIn(username, password)
+            // console.log('user: ', user)
+          this.setState({ user })
+            // this.props.navigation.navigate('AuthLoading')
+        } catch(err) {
             if (! err.message) {
             console.log('Error when signing in: ', err)
             // Alert.alert('Error when signing in: ', err)
@@ -173,10 +165,11 @@ const logo = require('../images/logo.jpg')
             console.log('Error when signing in: ', err, '; ', err.message)
             // Alert.alert('Error when signing in: ', err.message)
             }
-        })
+        }
       }
 
     render() {
+      console.log('sign in props: ', this.props)
         let { fadeOut, fadeIn, isHidden } = this.state
       return (
         <SafeAreaView style={styles.container} >

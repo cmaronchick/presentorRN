@@ -1,23 +1,24 @@
 import React from 'react'
 import {
   StyleSheet,
-  View,
-  Text,
   TouchableOpacity,
   Image,
 } from 'react-native'
+import {
+  View,
+  Text,
+} from 'native-base'
 import Auth from '@aws-amplify/auth'
 const logo = require('../images/logo.jpg')
 
 export default class WelcomeScreen extends React.Component {
   checkUserStatus = async () => {
-    await Auth.currentAuthenticatedUser()
-    .then((user) => {
+    try {
+    let user = await Auth.currentAuthenticatedUser()
       console.log('user: ', user)
-    })
-    .catch((error) => {
+    } catch(error) {
       console.log('user error: ', error)
-    })
+    }
   }  
   componentDidMount() {
     this.checkUserStatus()

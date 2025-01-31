@@ -144,7 +144,7 @@ import apis from '../../apis/apis';
                 if (session.isValid()) {
                   console.log('session is valid');
                   this.setState({user: cognitoUser})
-                  this.props.navigation.navigate('AuthLoading')
+                  // this.props.navigation.navigate('AuthLoading')
                 } else {
                   console.log('session is not valid: ', session);
                 }

@@ -24,9 +24,12 @@ import {
 import styles from '../styles/signIn'
 
 export default class SettingsScreen extends React.Component {
-    state = {
-        password1: '',
-        password2: ''
+    constructor(props) {
+        super(props)
+        this.state = {
+            password1: '',
+            password2: ''
+        }
     }
     onChangeText(key, value) {
         this.setState({[key]: value})
@@ -46,14 +49,16 @@ export default class SettingsScreen extends React.Component {
     }
     // Confirm sign out
     signOut = async () => {
-        await Auth.signOut()
-        .then(() => {
-        console.log('Sign out complete')
-        this.props.navigation.navigate('AuthLoading')
-        })
-        .catch(err => console.log('Error while signing out!', err))
+        try {
+            let signOutResponse = await Auth.signOut()
+            console.log('Sign out complete')
+            this.props.handleSignOut()
+        } catch(err) {
+            console.log('Error while signing out!', err)
+        }
     }
   render() {
+    //   console.log('settings props: ', this.props)
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar/>
@@ -131,7 +136,7 @@ export default class SettingsScreen extends React.Component {
                             }
                         ]
                         }
-                        onPress={() => this.signOutAlert()}>
+                        onPress={() => this.props.handleSignOut()}>
                         <Icon name='md-power' style={{color: '#fff', paddingRight: 10}}/>
                         <Text style={styles.buttonText}>
                         Sign out

@@ -33,8 +33,8 @@ class PresenteeModal extends Component {
     }
 
     render () {
-        console.log('presenteeModal props :', this.props);
-        console.log('presenteeModal state :', this.state);
+        // console.log('presenteeModal props :', this.props);
+        // console.log('presenteeModal state :', this.state);
         return (
             <Modal
             style={[styles.container, { margin: 20, justifyContent: 'space-around'}]}
