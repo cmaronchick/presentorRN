@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
+import SignUp from '@/components/SignUp';
 import { Text, View } from '@/components/Themed';
 import { Input, InputField } from "@/components/ui/input"
 import { Button, ButtonText } from '@/components/ui/button';
