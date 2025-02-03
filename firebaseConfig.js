@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
-import { getAuth } from "firebase/auth";
+import { getApp, initializeApp } from '@react-native-firebase/app';
+import { getAnalytics } from '@react-native-firebase/analytics';
+import { getAuth } from "@react-native-firebase/auth";
 
 // Optionally import the services that you want to use
 // import {...} from 'firebase/auth';

@@ -1,22 +1,38 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { StyleSheet } from 'react-native';
 
 import { ExternalLink } from './ExternalLink';
 import { MonoText } from './StyledText';
 import { Text, View } from './Themed';
+import { Input, InputField } from "@/components/ui/input"
+import { Button, ButtonText } from '@/components/ui/button';
+import auth from '@react-native-firebase/auth';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
+import { FontAwesome } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 
-export default function EditScreenInfo({ path }: { path: string }) {
+export default function SignUp({ path }: { path: string }) {
+  const [email, setEmail] = useState<string>("");
   return (
-    <View>
-      <View style={styles.getStartedContainer}>
-        <Text
-          style={styles.getStartedText}
-          lightColor="rgba(0,0,0,0.8)"
-          darkColor="rgba(255,255,255,0.8)">
-          Open up the code for this screen:
-        </Text>
+    <VStack>
+      <VStack style={styles.getStartedContainer}>
+        <HStack>
+          <FontAwesome name='at' size={24} color={Colors.light.tint} />
+          <Input
+            variant="outline"
+            size="md"
+            isDisabled={false}
+            isInvalid={false}
+            isReadOnly={false}>
+            <InputField
+              placeholder="E-mail Address"
+              type='text'
+              value={email}
+              onChangeText={value => setEmail(value)} />
+          </Input>
+        </HStack>
 
         <View
           style={[styles.codeHighlightContainer, styles.homeScreenFilename]}
@@ -31,7 +47,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
           darkColor="rgba(255,255,255,0.8)">
           Change any of the text, save the file, and your app will automatically update.
         </Text>
-      </View>
+      </VStack>
 
       <View style={styles.helpContainer}>
         <ExternalLink
@@ -42,7 +58,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
           </Text>
         </ExternalLink>
       </View>
-    </View>
+    </VStack>
   );
 }
 
