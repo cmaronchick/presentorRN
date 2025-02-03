@@ -15,7 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.presentorRN"
+      "bundleIdentifier": "com.presentorRN",
+      "googleServicesFile": "./GoogleService-Info.plist",
     },
     "android": {
       "adaptiveIcon": {
