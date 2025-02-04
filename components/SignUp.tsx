@@ -1,25 +1,83 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { StyleSheet } from 'react-native';
 
 import { ExternalLink } from './ExternalLink';
 import { MonoText } from './StyledText';
 import { Text, View } from './Themed';
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input"
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore'
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
+import { Spinner } from './ui/spinner';
+
+interface SignUpError {
+  code: string;
+  message: string;
+}
 
 export default function SignUp({ path }: { path: string }) {
   const [email, setEmail] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+  const [signUpError, setSignUpError] = useState<SignUpError>({ code: '', message: '' }); 
+
+  useEffect(() => {
+    function validateEmail(email: string): boolean {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(email);
+    }
+    if (email && firstName && lastName && password && confirmPassword && password === confirmPassword && validateEmail(email)) {
+      setIsComplete(true);
+    }
+  }, [firstName, lastName, email, password, confirmPassword]);
+  const handleSignUp = async () => {
+    console.log('button clicked :>> ');
+    if (isComplete) {
+      try {
+        setLoading(true);
+        const userCredential = await auth().createUserWithEmailAndPassword(
+          email, 
+          password
+        );
+        console.log('userCredential :>> ', userCredential);
+        await userCredential.user?.updateProfile({
+          displayName: username
+        });
+        await firestore().collection('users').doc(userCredential.user?.uid).set({
+          email,
+          username,
+          firstName,
+          lastName
+        });
+
+      } catch(error: any) {
+          if (error.code === 'auth/email-already-in-use') {
+            console.log('That email address is already in use!');
+            setSignUpError({ code: error.code, message: 'That email address is already in use!'});
+          }
+      
+          if (error.code === 'auth/invalid-email') {
+            console.log('That email address is invalid!');
+            setSignUpError({code: error.code, message: 'That email address is invalid!'});
+          }
+      
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+    }
+  }
+
 
   return (
     <VStack>
@@ -37,7 +95,23 @@ export default function SignUp({ path }: { path: string }) {
               placeholder="E-mail Address"
               type='text'
               value={email}
-              onChangeText={value => setEmail(value)} />
+              onChangeText={value => setEmail(value.toLocaleLowerCase())} />
+          </Input>
+        </HStack>
+        <HStack style={styles.inputFieldRow}>
+          <Input
+            variant="outline"
+            size="md"
+            isDisabled={false}
+            isInvalid={false}
+            isReadOnly={false}
+            style={styles.inputField}>
+            <MaterialCommunityIcons name="account-box" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            <InputField
+              placeholder="Username"
+              type='text'
+              value={username}
+              onChangeText={value => setUsername(value.toLocaleLowerCase())} />
           </Input>
         </HStack>
         <HStack style={styles.inputFieldRow}>
@@ -104,8 +178,19 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setConfirmPassword(value)} />
           </Input>
         </HStack>
-        <Button>
-          <ButtonText>Sign Up</ButtonText>
+        <Button
+          variant="solid"
+          onPress={handleSignUp}
+          isDisabled={!isComplete || loading}
+          style={styles.button}
+          >
+          
+          {loading ? (<Spinner
+          
+            color={Colors.dark.tint}
+            size={20} />) : (
+              <ButtonText style={styles.buttonText}>Sign Up</ButtonText>
+            )}
         </Button>
         {/* <View
           style={[styles.codeHighlightContainer, styles.homeScreenFilename]}
@@ -131,6 +216,7 @@ export default function SignUp({ path }: { path: string }) {
         </ExternalLink>
       </View> */}
         </VStack>
+        {signUpError.code !== '' && (<Text darkColor='red'>{signUpError.message}</Text>)}
     </VStack>
   );
 }
@@ -177,5 +263,20 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 10
+  },
+  button: {
+    backgroundColor: Colors.light.tint,
+    borderRadius: 5,
+    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10
+  },
+  buttonText: {
+    color: Colors.dark.tint,
+    fontSize: 16,
+    fontWeight: '700',
   }
+
 });

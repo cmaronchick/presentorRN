@@ -1654,6 +1654,11 @@
   dependencies:
     "@react-native-aria/focus" "^0.2.9"
 
+"@gluestack-ui/spinner@^0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@gluestack-ui/spinner/-/spinner-0.1.15.tgz#712276227568476f55672b7bbe0082478c0c0a65"
+  integrity sha512-jkXOGhna05HM2tcPKbA+t+vqcVRgRowwC6ES0A9kY5fcuURH1V41UFx/YWyHdSsHwmWlIoCCdWycF78UbNVdPg==
+
 "@gluestack-ui/toast@^1.0.8":
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/@gluestack-ui/toast/-/toast-1.0.8.tgz#af77d31fdf5fc440041c3a4e08ede4dd2b950e66"
@@ -2245,6 +2250,11 @@
   integrity sha512-ld5cKgn6m3ouunqjc2zK1j65b4Dh+auq8h+j0bZvai9pA5LkTz2ReGc8hpwQ5uaNtNszu5TaV7ETGJaAJF0xqA==
   dependencies:
     stacktrace-js "^2.0.2"
+
+"@react-native-firebase/firestore@^21.7.1":
+  version "21.7.1"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-21.7.1.tgz#69292bfdfdfa8ec48a04718fe57227571146e875"
+  integrity sha512-tW1nfya6q/OK0KvQv3/6dJlyeagPoWWGKIvAhPDxjun33ZvCPPsKDJdRkSluaE6cszsCa2IP7srg56FespaWJA==
 
 "@react-native/assets-registry@0.76.6":
   version "0.76.6"
