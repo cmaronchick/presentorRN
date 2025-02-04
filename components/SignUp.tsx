@@ -14,6 +14,7 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icon
 
 import Colors from '@/constants/Colors';
 import { Spinner } from './ui/spinner';
+import Styles from '@/constants/Styles';
 
 interface SignUpError {
   code: string;
@@ -53,12 +54,15 @@ export default function SignUp({ path }: { path: string }) {
         await userCredential.user?.updateProfile({
           displayName: username
         });
-        await firestore().collection('users').doc(userCredential.user?.uid).set({
-          email,
-          username,
+
+        await firestore().collection('users').add({
+          uid: userCredential.user?.uid,
+          email: userCredential.user?.email,
+          username: username,
           firstName,
           lastName
         });
+        //doc() 
 
       } catch(error: any) {
           if (error.code === 'auth/email-already-in-use') {
@@ -81,16 +85,16 @@ export default function SignUp({ path }: { path: string }) {
 
   return (
     <VStack>
-      <VStack style={styles.inputVStack}>
-        <HStack style={styles.inputFieldRow}>
+      <VStack style={Styles.InputVStack}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <FontAwesome name="envelope" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <FontAwesome name="envelope" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="E-mail Address"
               type='text'
@@ -98,15 +102,15 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setEmail(value.toLocaleLowerCase())} />
           </Input>
         </HStack>
-        <HStack style={styles.inputFieldRow}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <MaterialCommunityIcons name="account-box" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <MaterialCommunityIcons name="account-box" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="Username"
               type='text'
@@ -114,15 +118,15 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setUsername(value.toLocaleLowerCase())} />
           </Input>
         </HStack>
-        <HStack style={styles.inputFieldRow}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <Ionicons name="person" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <Ionicons name="person" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="First Name"
               type='text'
@@ -130,15 +134,15 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setFirstName(value)} />
           </Input>
         </HStack>
-        <HStack style={styles.inputFieldRow}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <Ionicons name="person" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <Ionicons name="person" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="Last Name"
               type='text'
@@ -146,15 +150,15 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setLastName(value)} />
           </Input>
         </HStack>
-        <HStack style={styles.inputFieldRow}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="Password"
               type='password'
@@ -162,15 +166,15 @@ export default function SignUp({ path }: { path: string }) {
               onChangeText={value => setPassword(value)} />
           </Input>
         </HStack>
-        <HStack style={styles.inputFieldRow}>
+        <HStack style={Styles.InputFieldRow}>
           <Input
             variant="outline"
             size="md"
             isDisabled={false}
             isInvalid={false}
             isReadOnly={false}
-            style={styles.inputField}>
-            <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={styles.inputIcon} />
+            style={Styles.InputField}>
+            <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
             <InputField
               placeholder="Confirm Password"
               type='password'
@@ -182,14 +186,14 @@ export default function SignUp({ path }: { path: string }) {
           variant="solid"
           onPress={handleSignUp}
           isDisabled={!isComplete || loading}
-          style={styles.button}
+          style={Styles.Button}
           >
           
           {loading ? (<Spinner
           
             color={Colors.dark.tint}
             size={20} />) : (
-              <ButtonText style={styles.buttonText}>Sign Up</ButtonText>
+              <ButtonText style={Styles.ButtonText}>Sign Up</ButtonText>
             )}
         </Button>
         {/* <View
@@ -221,12 +225,7 @@ export default function SignUp({ path }: { path: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  inputVStack: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginHorizontal: 50,
-  },
+const localstyles = StyleSheet.create({
   homeScreenFilename: {
     marginVertical: 7,
   },
@@ -250,33 +249,4 @@ const styles = StyleSheet.create({
   helpLinkText: {
     textAlign: 'center',
   },
-  inputFieldRow: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 3,
-    paddingHorizontal: 5
-  },
-  inputField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start'
-  },
-  inputIcon: {
-    marginRight: 10
-  },
-  button: {
-    backgroundColor: Colors.light.tint,
-    borderRadius: 5,
-    padding: 10,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10
-  },
-  buttonText: {
-    color: Colors.dark.tint,
-    fontSize: 16,
-    fontWeight: '700',
-  }
-
 });
