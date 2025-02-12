@@ -6,6 +6,7 @@ import { MonoText } from './StyledText';
 import { Text, View } from './Themed';
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input"
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
+import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore'
 import { VStack } from '@/components/ui/vstack';
@@ -51,11 +52,11 @@ export default function SignUp({ path }: { path: string }) {
           password
         );
         console.log('userCredential :>> ', userCredential);
-        await userCredential.user?.updateProfile({
-          displayName: username
-        });
+        // await userCredential.user?.updateProfile({
+        //   displayName: username
+        // });
 
-        await firestore().collection('users').add({
+        await firestore().collection('users').doc().set({
           uid: userCredential.user?.uid,
           email: userCredential.user?.email,
           username: username,
@@ -84,7 +85,7 @@ export default function SignUp({ path }: { path: string }) {
 
 
   return (
-    <VStack>
+    <VStack style={{flex: 1, width: '100%'}}>
       <VStack style={Styles.InputVStack}>
         <HStack style={Styles.InputFieldRow}>
           <Input
@@ -155,7 +156,6 @@ export default function SignUp({ path }: { path: string }) {
             variant="outline"
             size="md"
             isDisabled={false}
-            isInvalid={false}
             isReadOnly={false}
             style={Styles.InputField}>
             <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
@@ -170,8 +170,8 @@ export default function SignUp({ path }: { path: string }) {
           <Input
             variant="outline"
             size="md"
+            isRequired={true}
             isDisabled={false}
-            isInvalid={false}
             isReadOnly={false}
             style={Styles.InputField}>
             <Ionicons name="lock-closed" size={12} color={Colors.light.tint} style={Styles.InputIcon} />
@@ -220,7 +220,7 @@ export default function SignUp({ path }: { path: string }) {
         </ExternalLink>
       </View> */}
         </VStack>
-        {signUpError.code !== '' && (<Text darkColor='red'>{signUpError.message}</Text>)}
+        {signUpError.code !== '' && (<HStack style={{width: '100%', justifyContent: 'center', marginTop: 5}}><Text style={{color: 'red', textAlign: 'center'}}>{signUpError.message}</Text></HStack>)}
     </VStack>
   );
 }

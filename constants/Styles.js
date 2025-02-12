@@ -42,6 +42,9 @@ const styles = StyleSheet.create({
         color: Colors.dark.tint,
         fontSize: 16,
         fontWeight: '700',
+    },
+    ButtonIsDisabled: {
+        opacity: 0.5
     }
 });
 
