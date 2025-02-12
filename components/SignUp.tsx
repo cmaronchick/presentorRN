@@ -52,9 +52,9 @@ export default function SignUp({ path }: { path: string }) {
           password
         );
         console.log('userCredential :>> ', userCredential);
-        // await userCredential.user?.updateProfile({
-        //   displayName: username
-        // });
+        await userCredential.user?.updateProfile({
+          displayName: username
+        });
 
         await firestore().collection('users').doc().set({
           uid: userCredential.user?.uid,
